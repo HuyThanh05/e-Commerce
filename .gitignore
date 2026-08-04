@@ -1,0 +1,52 @@
+# 1. FRONTEND (ecom-frontend)
+ecom-frontend/node_modules/
+ecom-frontend/dist/
+ecom-frontend/dist-ssr/
+ecom-frontend/*.local
+ecom-frontend/.env
+ecom-frontend/.env.*
+!ecom-frontend/.env.example
+
+# Frontend Logs
+ecom-frontend/logs/
+ecom-frontend/*.log
+ecom-frontend/npm-debug.log*
+ecom-frontend/yarn-debug.log*
+ecom-frontend/yarn-error.log*
+ecom-frontend/pnpm-debug.log*
+ecom-frontend/lerna-debug.log*
+
+# 2. BACKEND SPRING BOOT (sb-ecom - Maven)
+sb-ecom/target/
+sb-ecom/build/
+sb-ecom/out/
+sb-ecom/images/
+
+# Maven wrapper / temp files
+sb-ecom/.mvn/timing.properties
+sb-ecom/.mvn/wrapper/maven-wrapper.jar
+
+# Backend Logs & Config 
+sb-ecom/*.log
+sb-ecom/logs/
+sb-ecom/src/main/resources/application-local.properties
+sb-ecom/src/main/resources/application-local.yml
+
+# 3. IDEs, EDITORS & OS 
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/*
+!.vscode/extensions.json
+.settings/
+.project/
+.classpath/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.history/
