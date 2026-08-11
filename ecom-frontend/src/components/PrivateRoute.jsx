@@ -13,19 +13,15 @@ const PrivateRoute = ({ publicPage = false, adminOnly = false }) => {
   }
 
   if (adminOnly) {
+    if (!isAdmin && !isSeller) return <Navigate to="/" replace />;
     if (isSeller && !isAdmin) {
       const sellerAllowedPaths = ["/admin/orders", "/admin/products"];
-      const sellerAllowed = sellerAllowedPaths.some((path) =>
-        location.pathname.startsWith(path),
+      const sellerAllowed = sellerAllowedPaths.some((p) =>
+        location.pathname.startsWith(p),
       );
-      if (!sellerAllowed) {
-        return <Navigate to="/" replace />;
-      }
+      if (!sellerAllowed) return <Navigate to="/" replace />;
     }
-  }
-
-  if (!isAdmin && !isSeller) {
-    return <Navigate to="/" />;
+    return <Outlet />;
   }
 
   return user ? <Outlet /> : <Navigate to="/login" />;

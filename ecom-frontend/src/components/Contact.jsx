@@ -6,7 +6,7 @@ const Contact = () => {
       className="flex flex-col items-center justify-center min-h-screen py-12 bg-cover bg-center"
       style={{
         backgroundImage:
-          "url('https://thietkebanner.vn/wp-content/uploads/2021/04/banner-thoi-trang-dep.jpg')",
+          "url('https://images.pexels.com/photos/31155535/pexels-photo-31155535.jpeg?_gl=1*1k4d7yi*_ga*NzQ0OTA1NzQyLjE3ODU0Mjk1NDk.*_ga_8JE65Q40S6*czE3ODY0MzkxNjEkbzMkZzEkdDE3ODY0MzkyNDEkajU5JGwwJGgw')",
       }}
     >
       <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">

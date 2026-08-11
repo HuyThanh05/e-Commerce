@@ -138,15 +138,44 @@ public class OrderServiceImpl implements OrderService {
         return modelMapper.map(order, OrderDTO.class);
     }
 
+//    @Override
+//    public OrderResponse getAllSellerOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+//        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
+//                ? Sort.by(sortBy).ascending()
+//                : Sort.by(sortBy).descending();
+//        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+//        User seller = authUtil.loggedInUser();
+//        Page<Order> pageOrders = orderRepository.findAll(pageDetails);
+//        List<Order> sellerOrders = pageOrders.getContent().stream().filter(order -> order.getOrderItems().stream().anyMatch(
+//                orderItem -> {
+//                    var product = orderItem.getProduct();
+//                    if (product == null || product.getUser() == null) {
+//                        return false;
+//                    }
+//                    return product.getUser().getUserId().equals(
+//                            seller.getUserId());
+//                })).toList();
+//        List<OrderDTO> orderDTOs = sellerOrders.stream().map(order -> modelMapper.map(order, OrderDTO.class)).toList();
+//        OrderResponse orderResponse = new OrderResponse();
+//        orderResponse.setContent(orderDTOs);
+//        orderResponse.setPageNumber(pageOrders.getNumber());
+//        orderResponse.setPageSize(pageOrders.getSize());
+//        orderResponse.setTotalElements(pageOrders.getTotalElements());
+//        orderResponse.setTotalPages(pageOrders.getTotalPages());
+//        orderResponse.setLastPage(pageOrders.isLast());
+//        return orderResponse;
+//    }
+
     @Override
     public OrderResponse getAllSellerOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
-        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
         User seller = authUtil.loggedInUser();
-        Page<Order> pageOrders = orderRepository.findAll(pageDetails);
-        List<Order> sellerOrders = pageOrders.getContent().stream().filter(order -> order.getOrderItems().stream().anyMatch(
+
+        // Filter FIRST across ALL orders (not just the current page), THEN paginate the filtered result.
+        List<Order> allOrdersSorted = orderRepository.findAll(sortByAndOrder);
+        List<Order> sellerOrders = allOrdersSorted.stream().filter(order -> order.getOrderItems().stream().anyMatch(
                 orderItem -> {
                     var product = orderItem.getProduct();
                     if (product == null || product.getUser() == null) {
@@ -155,14 +184,21 @@ public class OrderServiceImpl implements OrderService {
                     return product.getUser().getUserId().equals(
                             seller.getUserId());
                 })).toList();
-        List<OrderDTO> orderDTOs = sellerOrders.stream().map(order -> modelMapper.map(order, OrderDTO.class)).toList();
+
+        int totalElements = sellerOrders.size();
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        int fromIndex = Math.min(pageNumber * pageSize, totalElements);
+        int toIndex = Math.min(fromIndex + pageSize, totalElements);
+        List<Order> pagedSellerOrders = sellerOrders.subList(fromIndex, toIndex);
+
+        List<OrderDTO> orderDTOs = pagedSellerOrders.stream().map(order -> modelMapper.map(order, OrderDTO.class)).toList();
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setContent(orderDTOs);
-        orderResponse.setPageNumber(pageOrders.getNumber());
-        orderResponse.setPageSize(pageOrders.getSize());
-        orderResponse.setTotalElements(pageOrders.getTotalElements());
-        orderResponse.setTotalPages(pageOrders.getTotalPages());
-        orderResponse.setLastPage(pageOrders.isLast());
+        orderResponse.setPageNumber(pageNumber);
+        orderResponse.setPageSize(pageSize);
+        orderResponse.setTotalElements((long) totalElements);
+        orderResponse.setTotalPages(totalPages);
+        orderResponse.setLastPage(pageNumber >= totalPages - 1);
         return orderResponse;
     }
 }
