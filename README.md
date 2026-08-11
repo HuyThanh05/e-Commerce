@@ -45,4 +45,5 @@ A fullstack e-commerce web application with three roles — **Admin**, **Seller*
 | Admin  | admin    | adminPass |
 | Seller | seller1  | password2 |
 | User   | user1    | password1 |
-![Uploading Home.png…]()
+
+<img width="1901" height="830" alt="Home" src="https://github.com/user-attachments/assets/d0c42d1d-fff3-440e-b15b-a62bcca921e2" />
