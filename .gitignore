@@ -33,6 +33,7 @@ sb-ecom/src/main/resources/application-local.properties
 sb-ecom/src/main/resources/application-local.yml
 
 # 3. IDEs, EDITORS & OS 
+.codex-work/
 .idea/
 *.iml
 *.iws

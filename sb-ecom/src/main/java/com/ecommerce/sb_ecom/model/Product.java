@@ -27,6 +27,9 @@ public class Product {
     private String productName;
     private String image;
 
+    @Column(name = "image_public_id")
+    private String imagePublicId;
+
     @NotBlank
     @Size(min = 6, message = "Product description must contain atleast 6 characters")
     private String description;
