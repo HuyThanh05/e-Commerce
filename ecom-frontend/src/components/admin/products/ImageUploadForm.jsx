@@ -18,7 +18,8 @@ const ImageUploadForm = ({ setOpen, product }) => {
 
   const onHandleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file && ["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (file && allowedTypes.includes(file.type) && file.size <= 5 * 1024 * 1024) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result);
@@ -26,7 +27,7 @@ const ImageUploadForm = ({ setOpen, product }) => {
       reader.readAsDataURL(file);
       setSelectedFile(file);
     } else {
-      toast.error("Please select a valid image file (.jpeg, .jpg, .png)");
+      toast.error("Please select a JPEG, PNG, or WebP image up to 5 MB");
       setPreviewImage(null);
       setSelectedFile(null);
     }
@@ -72,7 +73,7 @@ const ImageUploadForm = ({ setOpen, product }) => {
               ref={fileInputRef}
               onChange={onHandleImageChange}
               className="hidden"
-              accept=".jpeg, .jpg, .png"
+              accept="image/jpeg,image/png,image/webp"
             />
           </label>
 

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { stripePaymentConfirmation } from "../../store/actions";
 import toast from "react-hot-toast";
+import { Skeleton } from "@mui/material";
 
 const PaymentConfirmation = () => {
   const location = useLocation();
@@ -28,7 +29,6 @@ const PaymentConfirmation = () => {
       cart &&
       cart?.length > 0
     ) {
-      console.log(selectedUserCheckoutAddress);
       const sendData = {
         addressId: selectedUserCheckoutAddress.addressId,
         pgName: "Stripe",
@@ -36,7 +36,6 @@ const PaymentConfirmation = () => {
         pgStatus: "succeeded",
         pgResponseMessage: "Payment successful",
       };
-      console.log(sendData);
       dispatch(
         stripePaymentConfirmation(sendData, setErrorMessage, setLoading, toast),
       );

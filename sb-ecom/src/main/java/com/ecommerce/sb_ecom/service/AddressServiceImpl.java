@@ -24,6 +24,15 @@ public class AddressServiceImpl implements AddressService {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    AuthUtil authUtil;
+
+    private Address getOwnedAddress(Long addressId) {
+        Long userId = authUtil.loggedInUser().getUserId();
+        return addressRepository.findByAddressIdAndUserUserId(addressId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
+    }
+
     @Override
     public AddressDTO createAddress(AddressDTO addressDTO, User user) {
         Address address = modelMapper.map(addressDTO, Address.class);
@@ -43,7 +52,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public AddressDTO getAddressesById(Long addressId) {
-        Address address = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
+        Address address = getOwnedAddress(addressId);
         return modelMapper.map(address, AddressDTO.class);
     }
 
@@ -55,7 +64,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public AddressDTO updateAddress(Long addressId, AddressDTO addressDTO) {
-        Address addressFromDatabase = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
+        Address addressFromDatabase = getOwnedAddress(addressId);
 
         addressFromDatabase.setCity(addressDTO.getCity());
         addressFromDatabase.setPincode(addressDTO.getPincode());
@@ -74,7 +83,7 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public String deleteAddress(Long addressId) {
-        Address addressFromDatabase = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
+        Address addressFromDatabase = getOwnedAddress(addressId);
         User user = addressFromDatabase.getUser();
         user.getAddresses().removeIf(address -> address.getAddressId().equals(addressId));
         userRepository.save(user);

@@ -8,6 +8,8 @@ import com.ecommerce.sb_ecom.payload.OrderItemDTO;
 import com.ecommerce.sb_ecom.payload.OrderResponse;
 import com.ecommerce.sb_ecom.repositories.*;
 import com.ecommerce.sb_ecom.util.AuthUtil;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,7 +63,14 @@ public class OrderServiceImpl implements OrderService {
         if (cart == null) {
             throw new ResourceNotFoundException("Cart", "email", emailId);
         }
-        Address address = addressRepository.findById(addressId).orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
+        Address address = addressRepository.findByAddressIdAndUserEmail(addressId, emailId)
+                .orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
+
+        if ("stripe".equalsIgnoreCase(pgName)) {
+            verifyStripePayment(pgPaymentId, cart.getTotalPrice());
+            pgStatus = "succeeded";
+            pgResponseMessage = "Payment verified by Stripe";
+        }
 
         // Create a new order with payment info
         Order order = new Order();
@@ -76,7 +87,7 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         // Get items from the cart into the order items
-        List<CartItem> cartItems = cart.getCartItems();
+        List<CartItem> cartItems = new ArrayList<>(cart.getCartItems());
         if (cartItems.isEmpty()) {
             throw new APIException("Cart is empty");
         }
@@ -93,9 +104,12 @@ public class OrderServiceImpl implements OrderService {
         orderItems = orderItemRepository.saveAll(orderItems);
 
         // Update product stock
-        cart.getCartItems().forEach(item -> {
+        cartItems.forEach(item -> {
             int quantity = item.getQuantity();
             Product product = item.getProduct();
+            if (quantity <= 0 || product.getQuantity() < quantity) {
+                throw new APIException("Insufficient stock for product: " + product.getProductName());
+            }
             // Reduce stock quantity
             product.setQuantity(product.getQuantity() - quantity);
             // Save product back to the database
@@ -109,6 +123,30 @@ public class OrderServiceImpl implements OrderService {
         orderItems.forEach(item -> orderDTO.getOrderItems().add(modelMapper.map(item, OrderItemDTO.class)));
         orderDTO.setAddressId(addressId);
         return orderDTO;
+    }
+
+    private void verifyStripePayment(String paymentIntentId, Double expectedTotal) {
+        if (paymentIntentId == null || paymentIntentId.isBlank()) {
+            throw new APIException("Stripe payment intent is required");
+        }
+        try {
+            PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
+            long expectedAmount = BigDecimal.valueOf(expectedTotal)
+                    .movePointRight(2)
+                    .setScale(0, RoundingMode.HALF_UP)
+                    .longValueExact();
+            if (!"succeeded".equals(paymentIntent.getStatus())) {
+                throw new APIException("Stripe payment has not succeeded");
+            }
+            if (!Long.valueOf(expectedAmount).equals(paymentIntent.getAmountReceived())) {
+                throw new APIException("Stripe payment amount does not match the order total");
+            }
+            if (!"usd".equalsIgnoreCase(paymentIntent.getCurrency())) {
+                throw new APIException("Unsupported Stripe payment currency");
+            }
+        } catch (StripeException exception) {
+            throw new APIException("Unable to verify Stripe payment");
+        }
     }
 
     @Override

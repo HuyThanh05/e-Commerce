@@ -3,6 +3,7 @@ package com.ecommerce.sb_ecom.service;
 import com.ecommerce.sb_ecom.exceptions.APIException;
 import com.ecommerce.sb_ecom.exceptions.ResourceNotFoundException;
 import com.ecommerce.sb_ecom.model.Cart;
+import com.ecommerce.sb_ecom.model.AppRole;
 import com.ecommerce.sb_ecom.model.Category;
 import com.ecommerce.sb_ecom.model.Product;
 import com.ecommerce.sb_ecom.model.User;
@@ -46,13 +47,10 @@ public class ProductServiceImpl implements ProductService {
     private ModelMapper modelMapper;
 
     @Autowired
-    private FileService fileService;
+    private CloudinaryImageService cloudinaryImageService;
 
     @Autowired
     AuthUtil authUtil;
-
-    @Value("${project.image}")
-    private String path;
 
     @Value("${image.base.url}")
     private String imageBaseUrl;
@@ -102,9 +100,7 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = pageProducts.getContent();
         List<ProductDTO> productDTOS = products.stream()
                 .map(product -> {
-                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
-                    productDTO.setImage(constructImageUrl(product.getImage()));
-                    return productDTO;
+                    return toProductDTO(product);
                 }).toList();
         ProductResponse productResponse = new ProductResponse();
         productResponse.setContent(productDTOS);
@@ -127,9 +123,7 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = pageProducts.getContent();
         List<ProductDTO> productDTOS = products.stream()
                 .map(product -> {
-                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
-                    productDTO.setImage(constructImageUrl(product.getImage()));
-                    return productDTO;
+                    return toProductDTO(product);
                 }).toList();
         ProductResponse productResponse = new ProductResponse();
         productResponse.setContent(productDTOS);
@@ -153,9 +147,7 @@ public class ProductServiceImpl implements ProductService {
         List<Product> products = pageProducts.getContent();
         List<ProductDTO> productDTOS = products.stream()
                 .map(product -> {
-                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
-                    productDTO.setImage(constructImageUrl(product.getImage()));
-                    return productDTO;
+                    return toProductDTO(product);
                 })
                 .toList();
         ProductResponse productResponse = new ProductResponse();
@@ -169,7 +161,30 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private String constructImageUrl(String imageName) {
+        if (imageName == null || imageName.isBlank()) {
+            return "";
+        }
+        if (imageName.startsWith("http://") || imageName.startsWith("https://")) {
+            return imageName;
+        }
         return imageBaseUrl.endsWith("/") ? imageBaseUrl + imageName : imageBaseUrl + "/" + imageName;
+    }
+
+    private ProductDTO toProductDTO(Product product) {
+        ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+        productDTO.setImage(constructImageUrl(product.getImage()));
+        return productDTO;
+    }
+
+    private void assertCanManageProduct(Product product) {
+        User currentUser = authUtil.loggedInUser();
+        boolean isAdmin = currentUser.getRoles().stream()
+                .anyMatch(role -> role.getRoleName() == AppRole.ROLE_ADMIN);
+        boolean isOwner = product.getUser() != null
+                && product.getUser().getUserId().equals(currentUser.getUserId());
+        if (!isAdmin && !isOwner) {
+            throw new APIException("You are not allowed to manage this product");
+        }
     }
 
     @Override
@@ -185,7 +200,7 @@ public class ProductServiceImpl implements ProductService {
         if(products.isEmpty()){
             throw new APIException(category.getCategoryName() + " category does not have any products");
         }
-        List<ProductDTO> productDTOS = products.stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
+        List<ProductDTO> productDTOS = products.stream().map(this::toProductDTO).toList();
         ProductResponse productResponse = new ProductResponse();
         productResponse.setContent(productDTOS);
         productResponse.setPageNumber(pageProducts.getNumber());
@@ -204,7 +219,7 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
         Page<Product> pageProducts = productRepository.findByProductNameLikeIgnoreCase('%' + keyword + '%', pageDetails);
         List<Product> products = pageProducts.getContent();
-        List<ProductDTO> productDTOS = products.stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
+        List<ProductDTO> productDTOS = products.stream().map(this::toProductDTO).toList();
         if(products.isEmpty()){
             throw new APIException("Products not found with keyword: " + keyword);
         }
@@ -222,6 +237,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO updateProduct(Long productId, ProductDTO productDTO) {
         Product productFromDb = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+        assertCanManageProduct(productFromDb);
         Product product = modelMapper.map(productDTO, Product.class);
         productFromDb.setProductName(product.getProductName());
         productFromDb.setDescription(product.getDescription());
@@ -239,27 +255,41 @@ public class ProductServiceImpl implements ProductService {
             return cartDTO;
         }).collect(Collectors.toList());
         cartDTOs.forEach(cart -> cartService.updateProductInCarts(cart.getCartId(), productId));
-        return modelMapper.map(savedProduct, ProductDTO.class);
+        return toProductDTO(savedProduct);
     }
 
     @Override
     public ProductDTO deleteProduct(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+        assertCanManageProduct(product);
         // DELETE
         List<Cart> carts = cartRepository.findCartsByProductId(productId);
         carts.forEach(cart -> cartService.deleteProductFromCart(cart.getCartId(), productId));
+        if (product.getImagePublicId() != null) {
+            try {
+                cloudinaryImageService.deleteImage(product.getImagePublicId());
+            } catch (IOException exception) {
+                throw new APIException("Unable to delete product image from Cloudinary");
+            }
+        }
         productRepository.delete(product);
-        return modelMapper.map(product, ProductDTO.class);
+        return toProductDTO(product);
     }
 
     @Override
     public ProductDTO updateProductImage(Long productId, MultipartFile image) throws IOException {
         Product productFromDb = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
-        String fileName = fileService.uploadImage(path, image);
-        productFromDb.setImage(fileName);
+        assertCanManageProduct(productFromDb);
+        String oldPublicId = productFromDb.getImagePublicId();
+        ImageUploadResult uploadResult = cloudinaryImageService.uploadProductImage(image);
+        productFromDb.setImage(uploadResult.secureUrl());
+        productFromDb.setImagePublicId(uploadResult.publicId());
         Product updatedProduct = productRepository.save(productFromDb);
-        return modelMapper.map(updatedProduct, ProductDTO.class);
+        if (oldPublicId != null && !oldPublicId.isBlank()) {
+            cloudinaryImageService.deleteImage(oldPublicId);
+        }
+        return toProductDTO(updatedProduct);
     }
 
 
