@@ -1,5 +1,7 @@
 # Fullstack E-Commerce Application
 
+[![Backend CI](https://github.com/HuyThanh05/e-Commerce/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/HuyThanh05/e-Commerce/actions/workflows/backend-ci.yml)
+
 A fullstack e-commerce web application with three roles — **Admin**, **Seller**, and **User** — built with Spring Boot and React.
 
 ## Features
