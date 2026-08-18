@@ -8,8 +8,6 @@
 
 A full-stack, role-based e-commerce application built with Spring Boot and React. It supports product and inventory management, persistent shopping carts, checkout, Stripe payments, Cloudinary image storage, and authentication with either credentials or Google OAuth 2.0.
 
-![Application home page](https://github.com/user-attachments/assets/d0c42d1d-fff3-440e-b15b-a62bcca921e2)
-
 ## Highlights
 
 - Role-based access for administrators, sellers, and customers
