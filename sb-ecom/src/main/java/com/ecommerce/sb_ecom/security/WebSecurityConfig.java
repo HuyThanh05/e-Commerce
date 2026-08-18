@@ -6,7 +6,9 @@ import com.ecommerce.sb_ecom.repositories.RoleRepository;
 import com.ecommerce.sb_ecom.security.jwt.AuthEntryPointJwt;
 import com.ecommerce.sb_ecom.security.jwt.AuthTokenFilter;
 import com.ecommerce.sb_ecom.security.services.UserDetailsServiceImpl;
+import com.ecommerce.sb_ecom.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +20,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -31,7 +32,16 @@ public class WebSecurityConfig {
     UserDetailsServiceImpl userDetailsService;
 
     @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
+
+    @Autowired
+    private OAuth2AuthenticationSuccessHandler oauth2SuccessHandler;
+
+    @Value("${oauth2.frontend.redirect-uri}")
+    private String oauth2FrontendRedirectUri;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -41,7 +51,7 @@ public class WebSecurityConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setPasswordEncoder(passwordEncoder);
         return authProvider;
     }
 
@@ -51,17 +61,12 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> {
                 })
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/error").permitAll()
@@ -77,6 +82,10 @@ public class WebSecurityConfig {
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 .anyRequest().authenticated()
                 );
+        http.oauth2Login(oauth2 -> oauth2
+                .successHandler(oauth2SuccessHandler)
+                .failureHandler((request, response, exception) ->
+                        response.sendRedirect(oauth2FrontendRedirectUri + "?error=oauth2")));
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));

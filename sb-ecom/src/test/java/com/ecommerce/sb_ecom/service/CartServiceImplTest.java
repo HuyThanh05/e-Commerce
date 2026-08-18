@@ -5,6 +5,7 @@ import com.ecommerce.sb_ecom.model.Cart;
 import com.ecommerce.sb_ecom.model.CartItem;
 import com.ecommerce.sb_ecom.model.Product;
 import com.ecommerce.sb_ecom.payload.CartDTO;
+import com.ecommerce.sb_ecom.payload.CartItemDTO;
 import com.ecommerce.sb_ecom.repositories.CartItemRepository;
 import com.ecommerce.sb_ecom.repositories.CartRepository;
 import com.ecommerce.sb_ecom.repositories.ProductRepository;
@@ -89,5 +90,31 @@ class CartServiceImplTest {
     void getAllCartsRejectsEmptyRepository() {
         when(cartRepository.findAll()).thenReturn(List.of());
         assertThrows(APIException.class, service::getAllCarts);
+    }
+
+    @Test
+    void createCartRejectsQuantityAboveCurrentStock() {
+        Product product = new Product();
+        product.setProductName("Phone");
+        product.setQuantity(1);
+        when(authUtil.loggedInEmail()).thenReturn("user@test.com");
+        when(cartRepository.findCartByEmail("user@test.com")).thenReturn(new Cart(4L, null, new ArrayList<>(), 0.0));
+        when(productRepository.findById(2L)).thenReturn(Optional.of(product));
+
+        assertThrows(APIException.class,
+                () -> service.createOrUpdateCartWithItems(List.of(new CartItemDTO(2L, 2))));
+
+        verify(cartItemRepository, never()).save(any());
+    }
+
+    @Test
+    void createCartRejectsZeroQuantity() {
+        when(authUtil.loggedInEmail()).thenReturn("user@test.com");
+        when(cartRepository.findCartByEmail("user@test.com")).thenReturn(new Cart(4L, null, new ArrayList<>(), 0.0));
+
+        assertThrows(APIException.class,
+                () -> service.createOrUpdateCartWithItems(List.of(new CartItemDTO(2L, 0))));
+
+        verifyNoInteractions(productRepository);
     }
 }

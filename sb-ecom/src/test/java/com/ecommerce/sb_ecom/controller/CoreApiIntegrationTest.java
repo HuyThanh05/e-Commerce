@@ -10,6 +10,7 @@ import com.ecommerce.sb_ecom.security.response.MessageResponse;
 import com.ecommerce.sb_ecom.security.response.UserInfoResponse;
 import com.ecommerce.sb_ecom.security.services.UserDetailsServiceImpl;
 import com.ecommerce.sb_ecom.service.AuthService;
+import com.ecommerce.sb_ecom.service.AddressService;
 import com.ecommerce.sb_ecom.service.CartService;
 import com.ecommerce.sb_ecom.service.OrderService;
 import com.ecommerce.sb_ecom.service.StripeService;
@@ -18,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration;
+import org.springframework.boot.security.oauth2.client.autoconfigure.servlet.OAuth2ClientWebSecurityAutoConfiguration;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -32,12 +35,16 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest({AuthController.class, CartController.class, OrderController.class})
+@WebMvcTest(
+        controllers = {AuthController.class, AddressController.class, CartController.class, OrderController.class},
+        excludeAutoConfiguration = {OAuth2ClientAutoConfiguration.class, OAuth2ClientWebSecurityAutoConfiguration.class}
+)
 @AutoConfigureMockMvc(addFilters = false)
 class CoreApiIntegrationTest {
     @Autowired MockMvc mockMvc;
 
     @MockitoBean AuthService authService;
+    @MockitoBean AddressService addressService;
     @MockitoBean CartService cartService;
     @MockitoBean OrderService orderService;
     @MockitoBean StripeService stripeService;
@@ -45,6 +52,26 @@ class CoreApiIntegrationTest {
     @MockitoBean AuthUtil authUtil;
     @MockitoBean JwtUtils jwtUtils;
     @MockitoBean UserDetailsServiceImpl userDetailsService;
+
+    @Test
+    void createAddressReturnsFieldValidationInsteadOfInternalServerError() throws Exception {
+        mockMvc.perform(post("/api/addresses")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "buildingName": "A",
+                                  "city": "HCM",
+                                  "state": "HCM",
+                                  "pincode": "1",
+                                  "street": "X",
+                                  "country": "VN"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.buildingName").exists())
+                .andExpect(jsonPath("$.pincode").exists())
+                .andExpect(jsonPath("$.street").exists());
+    }
 
     @Test
     void signupAcceptsValidRequestAndReturnsSuccessMessage() throws Exception {

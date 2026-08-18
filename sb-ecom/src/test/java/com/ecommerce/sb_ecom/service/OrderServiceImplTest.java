@@ -68,13 +68,10 @@ class OrderServiceImplTest {
         Address address = new Address(); address.setAddressId(9L);
         when(cartRepository.findCartByEmail("user@test.com")).thenReturn(cart);
         when(addressRepository.findByAddressIdAndUserEmail(9L, "user@test.com")).thenReturn(Optional.of(address));
-        when(paymentRepository.save(any(Payment.class))).thenAnswer(i -> i.getArgument(0));
-        when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArgument(0));
-        when(orderItemRepository.saveAll(anyList())).thenAnswer(i -> i.getArgument(0));
-
         assertThrows(APIException.class,
                 () -> service.placeOrder("user@test.com", 9L, "cash", "cod", null, "pending", "created"));
 
+        verifyNoInteractions(paymentRepository, orderRepository, orderItemRepository);
         verify(productRepository, never()).save(any());
         verify(cartService, never()).deleteProductFromCart(anyLong(), anyLong());
     }

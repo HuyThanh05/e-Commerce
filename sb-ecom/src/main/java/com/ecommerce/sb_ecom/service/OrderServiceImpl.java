@@ -66,6 +66,18 @@ public class OrderServiceImpl implements OrderService {
         Address address = addressRepository.findByAddressIdAndUserEmail(addressId, emailId)
                 .orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
 
+        List<CartItem> cartItems = new ArrayList<>(cart.getCartItems());
+        if (cartItems.isEmpty()) {
+            throw new APIException("Cart is empty");
+        }
+        cartItems.forEach(item -> {
+            int requestedQuantity = item.getQuantity();
+            Product product = item.getProduct();
+            if (requestedQuantity <= 0 || product.getQuantity() < requestedQuantity) {
+                throw new APIException("Insufficient stock for product: " + product.getProductName());
+            }
+        });
+
         if ("stripe".equalsIgnoreCase(pgName)) {
             verifyStripePayment(pgPaymentId, cart.getTotalPrice());
             pgStatus = "succeeded";
@@ -87,10 +99,6 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         // Get items from the cart into the order items
-        List<CartItem> cartItems = new ArrayList<>(cart.getCartItems());
-        if (cartItems.isEmpty()) {
-            throw new APIException("Cart is empty");
-        }
         List<OrderItem> orderItems = new ArrayList<>();
         for (CartItem cartItem : cartItems) {
             OrderItem orderItem = new OrderItem();
@@ -107,9 +115,6 @@ public class OrderServiceImpl implements OrderService {
         cartItems.forEach(item -> {
             int quantity = item.getQuantity();
             Product product = item.getProduct();
-            if (quantity <= 0 || product.getQuantity() < quantity) {
-                throw new APIException("Insufficient stock for product: " + product.getProductName());
-            }
             // Reduce stock quantity
             product.setQuantity(product.getQuantity() - quantity);
             // Save product back to the database
@@ -132,7 +137,6 @@ public class OrderServiceImpl implements OrderService {
         try {
             PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentIntentId);
             long expectedAmount = BigDecimal.valueOf(expectedTotal)
-                    .movePointRight(2)
                     .setScale(0, RoundingMode.HALF_UP)
                     .longValueExact();
             if (!"succeeded".equals(paymentIntent.getStatus())) {
@@ -141,7 +145,7 @@ public class OrderServiceImpl implements OrderService {
             if (!Long.valueOf(expectedAmount).equals(paymentIntent.getAmountReceived())) {
                 throw new APIException("Stripe payment amount does not match the order total");
             }
-            if (!"usd".equalsIgnoreCase(paymentIntent.getCurrency())) {
+            if (!"vnd".equalsIgnoreCase(paymentIntent.getCurrency())) {
                 throw new APIException("Unsupported Stripe payment currency");
             }
         } catch (StripeException exception) {

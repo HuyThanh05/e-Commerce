@@ -92,7 +92,8 @@ public class AuthServiceImpl implements AuthService {
     public UserInfoResponse getCurrentUserDetails(Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority()).collect(Collectors.toList());
-        UserInfoResponse response = new UserInfoResponse(userDetails.getId(), userDetails.getUsername(), roles);
+        UserInfoResponse response = new UserInfoResponse(
+                userDetails.getId(), userDetails.getUsername(), roles, userDetails.getEmail(), null);
         return response;
     }
 

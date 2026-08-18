@@ -54,11 +54,10 @@ public class StripeServiceImpl implements StripeService {
         if (cart == null || cart.getCartItems().isEmpty()) {
             throw new APIException("Cannot create a payment for an empty cart");
         }
-        long amountInCents = BigDecimal.valueOf(cart.getTotalPrice())
-                .movePointRight(2)
+        long amountInVnd = BigDecimal.valueOf(cart.getTotalPrice())
                 .setScale(0, RoundingMode.HALF_UP)
                 .longValueExact();
-        if (amountInCents <= 0) {
+        if (amountInVnd <= 0) {
             throw new APIException("Payment amount must be greater than zero");
         }
         if (stripePaymentDto.getAddress() == null || stripePaymentDto.getAddress().getAddressId() == null) {
@@ -93,8 +92,8 @@ public class StripeServiceImpl implements StripeService {
             customer = customers.getData().get(0);
         }
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
-                .setAmount(amountInCents)
-                .setCurrency("usd")
+                .setAmount(amountInVnd)
+                .setCurrency("vnd")
                 .setCustomer(customer.getId())
                 .setDescription("Order for " + user.getEmail())
                 .setAutomaticPaymentMethods(PaymentIntentCreateParams.AutomaticPaymentMethods.builder().setEnabled(true).build()).build();

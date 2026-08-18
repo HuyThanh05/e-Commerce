@@ -40,6 +40,7 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public CartDTO addProductToCart(Long productId, Integer quantity) {
+        validateRequestedQuantity(quantity);
         Cart cart = createCart();
         Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
         CartItem cartItem = cartItemRepository.findCartItemByProductIdAndCartId(cart.getCartId(), productId);
@@ -112,6 +113,9 @@ public class CartServiceImpl implements CartService {
     public CartDTO updateProductQuantityInCart(Long productId, Integer quantity) {
         String emailId = authUtil.loggedInEmail();
         Cart userCart = cartRepository.findCartByEmail(emailId);
+        if (userCart == null) {
+            throw new ResourceNotFoundException("Cart", "email", emailId);
+        }
         Long cartId = userCart.getCartId();
         Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new ResourceNotFoundException("Cart", "cartId", cartId));
         Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
@@ -216,8 +220,12 @@ public class CartServiceImpl implements CartService {
         for (CartItemDTO cartItemDTO : cartItems) {
             Long productId = cartItemDTO.getProductId();
             Integer quantity = cartItemDTO.getQuantity();
+            validateRequestedQuantity(quantity);
             // Find the product by ID
             Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+            if (product.getQuantity() < quantity) {
+                throw new APIException("Insufficient stock for product: " + product.getProductName());
+            }
             // Directly update product stock and total price
             // product.setQuantity(product.getQuantity() - quantity);
             totalPrice += product.getSpecialPrice() * quantity;
@@ -234,5 +242,11 @@ public class CartServiceImpl implements CartService {
         existingCart.setTotalPrice(totalPrice);
         cartRepository.save(existingCart);
         return "Cart created/updated with the new items successfully";
+    }
+
+    private void validateRequestedQuantity(Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            throw new APIException("Product quantity must be greater than zero");
+        }
     }
 }
