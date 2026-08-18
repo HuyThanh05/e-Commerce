@@ -1,12 +1,13 @@
 export const formatPrice = (amount) => {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("vi-VN", {
     style: "currency",
-    currency: "USD",
+    currency: "VND",
+    maximumFractionDigits: 0,
   }).format(amount);
 };
 
 export const formatPriceCalculation = (quantity, price) => {
-  return (Number(quantity) * Number(price)).toFixed(2);
+  return formatPrice(Number(quantity) * Number(price));
 };
 
 export const formatRevenue = (value) => {

@@ -6,6 +6,7 @@ import {
 } from "@stripe/react-stripe-js";
 import React from "react";
 import { useState } from "react";
+import { formatPrice } from "../../utils/formatPrice";
 
 const PaymentForm = ({ clientSecret, totalPrice }) => {
   const stripe = useStripe();
@@ -57,7 +58,7 @@ const PaymentForm = ({ clientSecret, totalPrice }) => {
             disabled={!stripe || isLoading}
           >
             {!isLoading
-              ? `Pay $${Number(totalPrice).toFixed(2)}`
+              ? `Thanh toán ${formatPrice(totalPrice)}`
               : "Processing"}
           </button>
         </>

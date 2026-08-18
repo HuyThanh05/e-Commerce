@@ -72,7 +72,7 @@ export const addToCart =
 
 export const increaseCartQuantity =
   (data, toast, currentQuantity, setCurrentQuantity) =>
-  (dispatch, getState) => {
+  async (dispatch, getState) => {
     // Find the product
     const { products } = getState().products;
 
@@ -80,29 +80,58 @@ export const increaseCartQuantity =
       (item) => item.productId === data.productId,
     );
 
-    const isQuantityExist = getProduct.quantity >= currentQuantity + 1;
+    const isQuantityExist = getProduct?.quantity >= currentQuantity + 1;
 
     if (isQuantityExist) {
       const newQuantity = currentQuantity + 1;
-      setCurrentQuantity(newQuantity);
-
-      dispatch({
-        type: "ADD_CART",
-        payload: { ...data, quantity: newQuantity + 1 },
-      });
-      localStorage.setItem("cartItems", JSON.stringify(getState().carts.cart));
+      try {
+        if (getState().carts.cartId) {
+          await api.put(`/cart/products/${data.productId}/quantity/add`);
+          await dispatch(getUserCart());
+        } else {
+          dispatch({
+            type: "ADD_CART",
+            payload: { ...data, quantity: newQuantity },
+          });
+          localStorage.setItem(
+            "cartItems",
+            JSON.stringify(getState().carts.cart),
+          );
+        }
+        setCurrentQuantity(newQuantity);
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.message || "Failed to update cart quantity",
+        );
+      }
     } else {
       toast.error("Quantity Reached to Limit");
     }
   };
 
 export const decreaseCartQuantity =
-  (data, newQuantity) => (dispatch, getState) => {
-    dispatch({
-      type: "ADD_CART",
-      payload: { ...data, quantity: newQuantity },
-    });
-    localStorage.setItem("cartItems", JSON.stringify(getState().carts.cart));
+  (data, newQuantity, toast, setCurrentQuantity) =>
+  async (dispatch, getState) => {
+    try {
+      if (getState().carts.cartId) {
+        await api.put(`/cart/products/${data.productId}/quantity/delete`);
+        await dispatch(getUserCart());
+      } else {
+        dispatch({
+          type: "ADD_CART",
+          payload: { ...data, quantity: newQuantity },
+        });
+        localStorage.setItem(
+          "cartItems",
+          JSON.stringify(getState().carts.cart),
+        );
+      }
+      setCurrentQuantity(newQuantity);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Failed to update cart quantity",
+      );
+    }
   };
 
 export const removeFromCart = (data, toast) => (dispatch, getState) => {
@@ -176,7 +205,16 @@ export const addUpdateUserAddress =
       dispatch({ type: "IS_SUCCESS" });
     } catch (error) {
       console.log(error);
-      toast.error(error?.response?.data?.message || "Internal Server Error");
+      const responseData = error?.response?.data;
+      const validationMessage =
+        responseData && typeof responseData === "object"
+          ? Object.values(responseData).find(
+              (value) => typeof value === "string",
+            )
+          : null;
+      toast.error(
+        responseData?.message || validationMessage || "Unable to save address",
+      );
       dispatch({ type: "IS_ERROR", payload: null });
     } finally {
       setOpenAddressModal(false);

@@ -1,10 +1,8 @@
 import { Icon } from "@mui/material";
 import React from "react";
-import { formatRevenue } from "../../../utils/formatPrice";
+import { formatPrice } from "../../../utils/formatPrice";
 
 const DashboardOverview = ({ title, amount, Icon, revenue = false }) => {
-  const convertedAmount = revenue ? Number(amount).toFixed(2) : amount;
-
   return (
     <>
       <div className="xl:w-80 w-full space-y-4 text-center md:text-start px-5 py-8">
@@ -16,8 +14,7 @@ const DashboardOverview = ({ title, amount, Icon, revenue = false }) => {
         </div>
 
         <h1 className="font-bold text-slate-800 text-3xl">
-          {revenue ? "$" : null}
-          {revenue ? formatRevenue(convertedAmount) : convertedAmount}
+          {revenue ? formatPrice(amount) : amount}
         </h1>
       </div>
     </>

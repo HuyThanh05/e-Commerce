@@ -27,6 +27,10 @@ const LogIn = () => {
     dispatch(authenticateSignInUser(data, toast, reset, navigate, setLoader));
   };
 
+  const loginWithGoogle = () => {
+    window.location.href = `${import.meta.env.VITE_BACK_END_URL}/oauth2/authorization/google`;
+  };
+
   return (
     <div className="min-h-[calc(100vh-64px)] flex justify-center items-center">
       <form
@@ -76,6 +80,20 @@ const LogIn = () => {
           ) : (
             <>Login</>
           )}
+        </button>
+
+        <div className="flex items-center gap-3 my-4">
+          <div className="h-px bg-gray-300 flex-1" />
+          <span className="text-sm text-gray-500">hoặc</span>
+          <div className="h-px bg-gray-300 flex-1" />
+        </div>
+
+        <button
+          type="button"
+          onClick={loginWithGoogle}
+          className="w-full py-2 border border-gray-300 rounded-md font-semibold hover:bg-gray-50 transition-colors"
+        >
+          Tiếp tục với Google
         </button>
 
         <p className="text-center text-sm text-slate-700 mt-6">

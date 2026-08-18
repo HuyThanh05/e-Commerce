@@ -20,8 +20,8 @@ const StripePayment = () => {
   useEffect(() => {
     if (!clientSecret) {
       const sendData = {
-        amount: Number(totalPrice) * 100,
-        currency: "usd",
+        amount: Math.round(Number(totalPrice)),
+        currency: "vnd",
         email: user.email,
         name: `${user.username}`,
         address: selectedUserCheckoutAddress,
