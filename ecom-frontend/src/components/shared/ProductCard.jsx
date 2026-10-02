@@ -1,135 +1,24 @@
-import { useState } from "react";
-import { FaShoppingCart } from "react-icons/fa";
-import ProductViewModal from "./ProductViewModal";
-import truncateText from "../../utils/truncateText";
-import { useDispatch } from "react-redux";
-import { addToCart } from "../../store/actions";
+import { FiHeart, FiShoppingCart } from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { addToCart } from "../../store/actions";
 import { formatPrice } from "../../utils/formatPrice";
+import { getImageUrl } from "../../utils/getImageUrl";
+import truncateText from "../../utils/truncateText";
+import "./product-card.css";
+import { toggleWishlist } from "../../store/actions/wishlistActions";
 
-const ProductCard = ({
-  productId,
-  productName,
-  image,
-  description,
-  quantity,
-  price,
-  discount,
-  specialPrice,
-  about = false,
-}) => {
-  const [openProductViewModal, setOpenProductViewModal] = useState(false);
-  const btnLoader = false;
-  const [selectedViewProduct, setSelectedViewProduct] = useState("");
-  const isAvailable = quantity && Number(quantity) > 0;
-  const dispatch = useDispatch();
-
-  const handleProductView = (product) => {
-    if (!about) {
-      setSelectedViewProduct(product);
-      setOpenProductViewModal(true);
-    }
-  };
-
-  const addToCartHandler = (cartItems) => {
-    dispatch(addToCart(cartItems, 1, toast));
-  };
-
-  return (
-    <div className="border rounded-lg shadow-xl overflow-hidden transition-shadow duration-300">
-      <div
-        onClick={() => {
-          handleProductView({
-            id: productId,
-            productName,
-            image,
-            description,
-            quantity,
-            price,
-            discount,
-            specialPrice,
-          });
-        }}
-        className="w-full overflow-hidden aspect-3/2"
-      >
-        <img
-          className="w-full h-full cursor-pointer transition-transform duration-300 transform hover:scale-105"
-          src={image}
-          alt={productName}
-        ></img>
-      </div>
-      <div className="p-4">
-        <h2
-          onClick={() => {
-            handleProductView({
-              id: productId,
-              productName,
-              image,
-              description,
-              quantity,
-              price,
-              discount,
-              specialPrice,
-            });
-          }}
-          className="text-lg font-semibold mb-2 cursor-pointer"
-        >
-          {truncateText(productName, 50)}
-        </h2>
-
-        <div className="min-h-20 max-h-20">
-          <p className="text-gray-600 text-sm">
-            {truncateText(description, 80)}
-          </p>
-        </div>
-
-        {!about && (
-          <div className="flex items-center justify-between">
-            {specialPrice ? (
-              <div className="flex flex-col">
-                <span className="text-gray-400 line-through">
-                  {formatPrice(price)}
-                </span>
-                <span className="text-xl font-bold text-slate-700">
-                  {formatPrice(specialPrice)}
-                </span>
-              </div>
-            ) : (
-              <span className="text-xl font-bold text-slate-700">
-                {formatPrice(price)}
-              </span>
-            )}
-
-            <button
-              disabled={!isAvailable || btnLoader}
-              onClick={() =>
-                addToCartHandler({
-                  image,
-                  productName,
-                  description,
-                  specialPrice,
-                  price,
-                  productId,
-                  quantity,
-                })
-              }
-              className={`bg-blue-500 ${isAvailable ? "opacity-100 hover:bg-blue-600" : "opacity-70"}
-                        text-white py-2 px-3 rounded-lg items-center transition-colors duration-300 w-36 flex justify-center`}
-            >
-              <FaShoppingCart className="mr-2" />
-              {isAvailable ? "Add to Cart" : "Stock Out"}
-            </button>
-          </div>
-        )}
-      </div>
-      <ProductViewModal
-        open={openProductViewModal}
-        setOpen={setOpenProductViewModal}
-        product={selectedViewProduct}
-        isAvailable={isAvailable}
-      />
-    </div>
-  );
+const ProductCard = ({ productId, productName, image, description, quantity, price, discount, specialPrice, about = false }) => {
+  const dispatch = useDispatch(); const navigate = useNavigate(); const available = Number(quantity) > 0; const finalPrice = specialPrice || price;
+  const wished = useSelector((state) => state.wishlist.items.some((item) => item.productId === productId));
+  const product = { productId,productName,image,description,quantity,price,discount,specialPrice };
+  const open = () => !about && navigate(`/products/${productId}`);
+  const add = (event) => { event.stopPropagation(); dispatch(addToCart(product,1,toast)); };
+  const toggleWish = (event) => { event.stopPropagation(); dispatch(toggleWishlist(product, toast)); };
+  return <article className="market-product-card">
+    <div className="market-product-card__image" onClick={open}>{discount > 0 && <span>-{Math.round(discount)}%</span>}<button className={wished ? "is-wished" : ""} onClick={toggleWish} aria-label={wished ? "Bỏ yêu thích" : "Thêm yêu thích"}><FiHeart/></button><img src={getImageUrl(image)} alt={productName}/></div>
+    <div className="market-product-card__body"><div className="market-product-card__rating">★ 4.9 <small>· Đã bán 1.2k</small></div><h3 onClick={open}>{truncateText(productName,55)}</h3><p>{truncateText(description,65)}</p><div className="market-product-card__prices"><strong>{formatPrice(finalPrice)}</strong>{specialPrice > 0 && <del>{formatPrice(price)}</del>}</div>{!about && <button disabled={!available} onClick={add}><FiShoppingCart/>{available ? "Thêm vào giỏ" : "Hết hàng"}</button>}</div>
+  </article>;
 };
-
 export default ProductCard;

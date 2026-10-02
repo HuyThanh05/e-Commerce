@@ -7,6 +7,7 @@ import { paymentMethodReducer } from "./paymentMethodReducer";
 import { adminReducer } from "./adminReducer";
 import { orderReducer } from "./orderReducer";
 import { sellerReducer } from "./sellerReducer";
+import { wishlistReducer } from "./wishlistReducer";
 
 const user = localStorage.getItem("auth")
   ? JSON.parse(localStorage.getItem("auth"))
@@ -20,9 +21,14 @@ const selectUserCheckoutAddress = localStorage.getItem("CHECKOUT_ADDRESS")
   ? JSON.parse(localStorage.getItem("CHECKOUT_ADDRESS"))
   : [];
 
+const wishlistItems = localStorage.getItem("wishlistItems")
+  ? JSON.parse(localStorage.getItem("wishlistItems"))
+  : [];
+
 const initialState = {
   auth: { user: user, selectUserCheckoutAddress },
   carts: { cart: cartItems },
+  wishlist: { items: wishlistItems },
 };
 
 export const store = configureStore({
@@ -35,6 +41,7 @@ export const store = configureStore({
     admin: adminReducer,
     order: orderReducer,
     seller: sellerReducer,
+    wishlist: wishlistReducer,
   },
   preloadedState: initialState,
 });

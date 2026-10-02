@@ -20,6 +20,10 @@ import Sellers from "./components/admin/sellers/Sellers";
 import Category from "./components/admin/categories/Category";
 import Orders from "./components/admin/orders/Orders";
 import OAuth2Redirect from "./components/auth/OAuth2Redirect";
+import ProductDetails from "./components/products/ProductDetails";
+import Footer from "./components/shared/Footer";
+import Profile from "./components/profile/Profile";
+import Wishlist from "./components/wishlist/Wishlist";
 
 function App() {
   return (
@@ -29,14 +33,17 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/products/:productId" element={<ProductDetails />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
 
           <Route path="/" element={<PrivateRoute />}>
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-confirm" element={<PaymentConfirmation />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
 
           <Route path="/" element={<PrivateRoute publicPage />}>
@@ -54,6 +61,7 @@ function App() {
             </Route>
           </Route>
         </Routes>
+        <Footer />
       </Router>
       <Toaster position="bottom-center" />
     </React.Fragment>

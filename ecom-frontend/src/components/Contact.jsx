@@ -1,82 +1,14 @@
-import { FaEnvelope, FaMapMarkedAlt, FaPhone } from "react-icons/fa";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { FiMail, FiMapPin, FiMessageCircle, FiPhone } from "react-icons/fi";
+import "./market-pages.css";
 
 const Contact = () => {
-  return (
-    <div
-      className="flex flex-col items-center justify-center min-h-screen py-12 bg-cover bg-center"
-      style={{
-        backgroundImage:
-          "url('https://images.pexels.com/photos/31155535/pexels-photo-31155535.jpeg?_gl=1*1k4d7yi*_ga*NzQ0OTA1NzQyLjE3ODU0Mjk1NDk.*_ga_8JE65Q40S6*czE3ODY0MzkxNjEkbzMkZzEkdDE3ODY0MzkyNDEkajU5JGwwJGgw')",
-      }}
-    >
-      <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">
-        <h1 className="text-4xl font-bold text-center mb-6">Contact us</h1>
-        <p className="text-gray-600 text-center mb-4">
-          We would love to hear from you! Please fill out the form below or
-          contact us directly
-        </p>
-
-        <form className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Name
-            </label>
-            <input
-              type="text"
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:outline-hidden focus:ring-2 focus: ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:outline-hidden focus:ring-2 focus: ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Message
-            </label>
-            <textarea
-              rows="4"
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-lg p-2 focus:outline-hidden focus:ring-2 focus: ring-blue-500"
-            />
-          </div>
-
-          <button className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition duration-300">
-            Send Message
-          </button>
-        </form>
-
-        <div className="mt-8 text-center">
-          <h2 className="text-lg font-semibold">Contact Information</h2>
-          <div className="flex flex-col items-center space-y-2 mt-4">
-            <div className="flex items-center">
-              <FaPhone className="text-blue-500 mr-2" />
-              <span className="text-gray-600">+4 8961 944 149</span>
-            </div>
-
-            <div className="flex items-center">
-              <FaEnvelope className="text-blue-500 mr-2" />
-              <span className="text-gray-600">embarkxofficial@gmail.com</span>
-            </div>
-
-            <div className="flex items-center">
-              <FaMapMarkedAlt className="text-blue-500 mr-2" />
-              <span className="text-gray-600">123 Main, Town, USA</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const [form,setForm]=useState({name:"",email:"",message:""});
+  const submit=(e)=>{e.preventDefault();toast.success("Cảm ơn bạn! Chúng tôi sẽ phản hồi sớm.");setForm({name:"",email:"",message:""})};
+  return <main className="brand-page"><div className="brand-shell"><div className="contact-layout">
+    <section className="contact-info"><span>TRUNG TÂM HỖ TRỢ</span><h1>Chúng tôi luôn<br/>sẵn sàng lắng nghe</h1><p>Bạn cần hỗ trợ về sản phẩm, đơn hàng hay thanh toán? Hãy để lại thông tin, đội ngũ Amazing Shop sẽ liên hệ trong thời gian sớm nhất.</p><div className="contact-cards"><div className="contact-card"><span><FiPhone/></span><div><strong>Hotline</strong><small>1900 1234 · 08:00–22:00</small></div></div><div className="contact-card"><span><FiMail/></span><div><strong>Email</strong><small>support@amazingshop.vn</small></div></div><div className="contact-card"><span><FiMapPin/></span><div><strong>Văn phòng</strong><small>TP. Hồ Chí Minh, Việt Nam</small></div></div></div></section>
+    <form className="contact-form" onSubmit={submit}><h2><FiMessageCircle/> Gửi yêu cầu hỗ trợ</h2><div className="contact-form__row"><div className="contact-form__field"><label>Họ và tên</label><input required value={form.name} onChange={(e)=>setForm({...form,name:e.target.value})} placeholder="Nguyễn Văn A"/></div><div className="contact-form__field"><label>Email</label><input type="email" required value={form.email} onChange={(e)=>setForm({...form,email:e.target.value})} placeholder="email@example.com"/></div></div><div className="contact-form__field"><label>Nội dung cần hỗ trợ</label><textarea rows="7" required value={form.message} onChange={(e)=>setForm({...form,message:e.target.value})} placeholder="Hãy mô tả vấn đề của bạn..."/></div><button>Gửi yêu cầu</button></form>
+  </div></div></main>;
 };
-
 export default Contact;

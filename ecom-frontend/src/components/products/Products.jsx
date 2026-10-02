@@ -1,4 +1,4 @@
-import { FaExclamationTriangle } from "react-icons/fa";
+import { FiAlertTriangle, FiGrid, FiPackage, FiShield, FiTruck } from "react-icons/fi";
 import ProductCard from "../shared/ProductCard";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
@@ -7,47 +7,23 @@ import Filter from "./Filter";
 import useProductFilter from "../../hooks/useProductFilter";
 import Loader from "../shared/Loader";
 import Paginations from "../shared/Paginations";
+import "./products.css";
 
 const Products = () => {
   const { isLoading, errorMessage } = useSelector((state) => state.errors);
-  const { products, categories, pagination } = useSelector(
-    (state) => state.products,
-  );
+  const { products, categories, pagination } = useSelector((state) => state.products);
   const dispatch = useDispatch();
   useProductFilter();
+  useEffect(() => { dispatch(fetchCategories()); }, [dispatch]);
 
-  useEffect(() => {
-    dispatch(fetchCategories());
-  }, [dispatch]);
-
-  return (
-    <div className="lg:px-14 sm:px-8 px-4 py-14 2xl:w-[90%] 2xl:mx-auto">
-      <Filter categories={categories ? categories : []} />
-      {isLoading ? (
-        <Loader />
-      ) : errorMessage ? (
-        <div className="flex justify-center items-center h-[200px]">
-          <FaExclamationTriangle className="text-slate-800 text-3xl mr-2" />
-          <span className="text-slate-800 text-lg font-medium">
-            {errorMessage}
-          </span>
-        </div>
-      ) : (
-        <div className="min-h-[700px]">
-          <div className="pb-6 pt-14 grid 2xl:grid-cols-4 lg:grid-cols-3 sm:grid-cols-2 gap-y-6 gap-x-6">
-            {products &&
-              products.map((item, i) => <ProductCard key={i} {...item} />)}
-          </div>
-          <div className="flex justify-center pt-10">
-            <Paginations
-              numberOfPage={pagination?.totalPages}
-              totalProducts={pagination?.totalElements}
-            />
-          </div>
-        </div>
-      )}
+  return <main className="products-page">
+    <section className="market-page-hero"><div><span>KHO SẢN PHẨM CHÍNH HÃNG</span><h1>Mua sắm mọi thứ<br/>bạn yêu thích</h1><p>Khám phá sản phẩm chất lượng, giá tốt và giao hàng nhanh chóng.</p></div><FiPackage /></section>
+    <div className="products-shell">
+      <div className="products-benefits"><span><FiShield/> Hàng chính hãng</span><span><FiTruck/> Giao hàng toàn quốc</span><span><FiGrid/> Đa dạng danh mục</span></div>
+      <Filter categories={categories || []}/>
+      <div className="products-result-title"><div><span>GỢI Ý HÔM NAY</span><h2>Sản phẩm dành cho bạn</h2></div><small>{pagination?.totalElements || 0} sản phẩm</small></div>
+      {isLoading ? <Loader/> : errorMessage ? <div className="products-state"><FiAlertTriangle/><h3>Chưa thể tải sản phẩm</h3><p>{errorMessage}</p></div> : <><div className="products-grid">{products?.map((item) => <ProductCard key={item.productId} {...item}/>)}</div><div className="products-pagination"><Paginations numberOfPage={pagination?.totalPages} totalProducts={pagination?.totalElements}/></div></>}
     </div>
-  );
+  </main>;
 };
-
 export default Products;

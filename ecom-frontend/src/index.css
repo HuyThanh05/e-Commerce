@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 @theme {
@@ -32,6 +32,26 @@
 }
 
 @layer base {
+  :root {
+    --market-navy: #14213d;
+    --market-text: #263754;
+    --market-muted: #64748b;
+    --market-soft: #94a3b8;
+    --market-coral: #ff4e5e;
+    --market-teal: #008f83;
+    --market-border: #d8e1ec;
+    --market-surface: #ffffff;
+    --market-background: #f5f7fa;
+    --market-content-width: 1480px;
+    --market-page-gutter: 64px;
+  }
+
+  html { color: var(--market-text); background: var(--market-background); }
+  body { margin: 0; min-width: 320px; color: var(--market-text); background: var(--market-background); font-family: "Be Vietnam Pro", "Segoe UI", sans-serif; font-size: 14px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+  button, input, select, textarea { font: inherit; }
+  button, a { transition: color .2s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+  h1, h2, h3, h4 { color: var(--market-navy); letter-spacing: -.02em; }
+  p { color: var(--market-muted); }
   *,
   ::after,
   ::before,
@@ -40,3 +60,85 @@
     border-color: var(--color-gray-200, currentcolor);
   }
 }
+
+/* Public storefront typography: one readable family across every page. */
+body, body * { font-family: "Be Vietnam Pro", "Segoe UI", sans-serif !important; }
+
+.market-topbar, .market-nav .market-shell { font-size: 12px; }
+.market-search input, .market-search button { font-size: 12px; }
+.home-section__heading span, .related-heading span, .brand-kicker,
+.products-result-title span, .profile-card__heading span { font-size: 10px; }
+.home-section__heading h2, .products-result-title h2,
+.related-heading h2 { color: var(--market-navy); }
+.deal-card h3, .market-product-card h3 { color: var(--market-text); font-size: 13px; }
+.deal-card__rating, .market-product-card__rating { font-size: 10px; }
+.deal-card__body > button, .market-product-card__body > button { font-size: 11px; }
+.product-description, .brand-hero p, .brand-story p,
+.contact-info > p { color: var(--market-muted); font-size: 12px; }
+.footer-shell h3 { font-size: 12px; }
+.footer-shell > div:not(:first-child) a,
+.footer-shell > div:not(:first-child) > span { font-size: 10px; }
+
+/* Shared responsive page grid for wide desktop screens. */
+.market-shell,
+.home-container,
+.products-shell,
+.product-detail-shell,
+.cart-shell,
+.brand-shell,
+.profile-shell,
+.footer-shell,
+.footer-bottom {
+  width: min(var(--market-content-width), calc(100% - var(--market-page-gutter))) !important;
+}
+
+.market-page-hero {
+  padding-inline: max(calc((100% - var(--market-content-width)) / 2), 32px) !important;
+}
+
+@media (min-width: 1440px) {
+  .products-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .home-hero { min-height: 430px; }
+  .home-hero__content { padding-left: 72px; }
+  .home-hero h1 { font-size: 54px; }
+  .product-main-image { min-height: 500px; }
+  .product-main-image img { max-height: 500px; }
+  .cart-layout { grid-template-columns: minmax(0, 1fr) 360px; gap: 26px; }
+  .profile-layout { grid-template-columns: 250px minmax(0, 1fr); }
+}
+
+@media (max-width: 900px) {
+  :root { --market-page-gutter: 32px; }
+}
+
+@media (max-width: 560px) {
+  :root { --market-page-gutter: 24px; }
+}
+
+/* Readable storefront type scale */
+.market-search button { min-width: 92px; white-space: nowrap; }
+.market-nav .market-shell { font-size: 13px; }
+.market-product-card__rating, .deal-card__rating { font-size: 11px; }
+.market-product-card h3, .deal-card h3 { font-size: 14px; line-height: 1.5; }
+.market-product-card p { font-size: 11px; }
+.market-product-card__prices strong, .deal-card__price strong { font-size: 17px; }
+.market-product-card__body > button, .deal-card__body > button { font-size: 12px; }
+.product-breadcrumb, .product-option, .shipping-row,
+.product-information li, .product-information aside p,
+.related-heading > a { font-size: 12px; }
+.product-meta, .product-assurance { font-size: 11px; }
+.product-price-box small, .shipping-row small { font-size: 10px; }
+.cart-list-header, .cart-item__info h3, .cart-item__total strong,
+.summary-line, .summary-total span { font-size: 12px; }
+.cart-store > header, .cart-continue, .coupon-card input,
+.coupon-card button, .checkout-button { font-size: 11px; }
+.cart-item__info span, .cart-item__total button,
+.cart-shipping-note { font-size: 10px; }
+.profile-menu a, .profile-fields strong, .address-grid h3 { font-size: 11px; }
+.profile-fields label, .profile-note, .address-grid p,
+.profile-empty p { font-size: 10px; }
+.brand-value p, .contact-card small, .contact-form label,
+.contact-form input, .contact-form textarea { font-size: 11px; }
+.footer-brand p, .footer-shell > div:not(:first-child) a,
+.footer-shell > div:not(:first-child) > span { font-size: 11px; }
+.footer-bottom { font-size: 10px; }

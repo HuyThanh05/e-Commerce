@@ -1,70 +1,21 @@
-// Import Swiper React components
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import "swiper/css/scrollbar";
-import "swiper/css/effect-fade";
-import "swiper/css/autoplay";
-
-// Import Swiper styles
-import "swiper/css";
-import { Autoplay, Pagination, EffectFade, Navigation } from "swiper/modules";
-
-import { bannerLists } from "../../utils";
 import { Link } from "react-router-dom";
+import { FiArrowRight } from "react-icons/fi";
+import heroImage from "../../assets/sliders/s_2.webp";
 
-const colors = ["bg-banner-color1", "bg-banner-color2", "bg-banner-color3"];
-
-const HeroBanner = () => {
-  return (
-    <div className="py-2 rounded-md">
-      <Swiper
-        grabCursor={true}
-        autoplay={{
-          delay: 4000,
-          disableOnInteraction: false,
-        }}
-        navigation
-        modules={[Pagination, EffectFade, Navigation, Autoplay]}
-        pagination={{ clickable: true }}
-        scrollbar={{ draggable: true }}
-        slidesPerView={1}
-      >
-        {bannerLists.map((item, i) => (
-          <SwiperSlide key={item.id}>
-            <div
-              className={`carousel-item rounded-md sm:h-[500px] h-96 ${colors[i]}`}
-            >
-              <div className="flex items-center justify-center">
-                <div className="hidden lg:flex justify-center w-1/2 p-8">
-                  <div className="text-center">
-                    <h3 className="text-3xl text-white font-bold">
-                      {item.title}
-                    </h3>
-                    <h1 className="text-5xl text-white font-bold mt-2">
-                      {item.subtitle}
-                    </h1>
-                    <p className="text-white font-bold mt-4">
-                      {item.description}
-                    </p>
-                    <Link
-                      className="mt-6 inline-block bg-black text-white py-2 px-4 rounded-sm hover:bg-gray-800"
-                      to="/products"
-                    >
-                      Shop
-                    </Link>
-                  </div>
-                </div>
-                <div className="w-full flex justify-center lg:w-1/2 p-4">
-                  <img src={item?.image}></img>
-                </div>
-              </div>
-            </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+const HeroBanner = () => (
+  <section className="home-hero">
+    <div className="home-hero__content">
+      <span className="home-hero__eyebrow">ƯU ĐÃI CÔNG NGHỆ THÁNG NÀY</span>
+      <h1>Deal chất ngất.<br />Giá giảm <em>hết cỡ.</em></h1>
+      <p>Khám phá hàng ngàn sản phẩm chính hãng, ưu đãi hấp dẫn và giao hàng nhanh chóng trên toàn quốc.</p>
+      <Link to="/products" className="home-primary-button">Khám phá ngay <FiArrowRight /></Link>
     </div>
-  );
-};
+    <div className="home-hero__visual" aria-hidden="true">
+      <span className="home-hero__shape" />
+      <img src={heroImage} alt="" />
+      <div className="home-hero__price-tag">Chỉ từ <strong>999K</strong></div>
+    </div>
+  </section>
+);
 
 export default HeroBanner;
