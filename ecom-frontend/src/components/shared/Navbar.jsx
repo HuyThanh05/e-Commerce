@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FiHeart, FiMenu, FiSearch, FiShoppingCart, FiUser, FiX, FiZap } from "react-icons/fi";
 import UserMenu from "../UserMenu";
 import "./navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [keyword, setKeyword] = useState("");
   const { cart } = useSelector((state) => state.carts);
@@ -18,6 +19,8 @@ const Navbar = () => {
     event.preventDefault();
     navigate(keyword.trim() ? `/products?keyword=${encodeURIComponent(keyword.trim())}` : "/products");
   };
+
+  if (pathname.startsWith("/admin") || pathname.startsWith("/seller")) return null;
 
   return <header className="market-header">
     <div className="market-main market-shell">

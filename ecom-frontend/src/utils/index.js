@@ -62,14 +62,19 @@ export const adminNavigation = [
 
 export const sellerNavigation = [
   {
-    name: "Orders",
-    href: "/admin/orders",
-    icon: FaShoppingCart,
+    name: "Tổng quan",
+    href: "/seller",
+    icon: FaHome,
     current: true,
   },
   {
-    name: "Products",
-    href: "/admin/products",
+    name: "Sản phẩm của tôi",
+    href: "/seller/products",
     icon: FaBoxOpen,
+  },
+  {
+    name: "Đơn hàng",
+    href: "/seller/orders",
+    icon: FaShoppingCart,
   },
 ];

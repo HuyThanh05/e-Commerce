@@ -167,6 +167,24 @@ public class ProductServiceImpl implements ProductService {
         return productResponse;
     }
 
+    @Override
+    public ProductResponse getProductsBySellerId(Long sellerId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+        Page<Product> pageProducts = productRepository.findByUserUserId(sellerId, pageDetails);
+
+        ProductResponse response = new ProductResponse();
+        response.setContent(pageProducts.getContent().stream().map(this::toProductDTO).toList());
+        response.setPageNumber(pageProducts.getNumber());
+        response.setPageSize(pageProducts.getSize());
+        response.setTotalElements(pageProducts.getTotalElements());
+        response.setTotalPages(pageProducts.getTotalPages());
+        response.setLastPage(pageProducts.isLast());
+        return response;
+    }
+
     private String constructImageUrl(String imageName) {
         if (imageName == null || imageName.isBlank()) {
             return "";

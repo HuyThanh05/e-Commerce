@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import "./App.css";
 import Products from "./components/products/Products";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -24,6 +24,8 @@ import ProductDetails from "./components/products/ProductDetails";
 import Footer from "./components/shared/Footer";
 import Profile from "./components/profile/Profile";
 import Wishlist from "./components/wishlist/Wishlist";
+import SellerDashboard from "./components/seller/SellerDashboard";
+import SellerStore from "./components/seller/SellerStore";
 
 function App() {
   return (
@@ -38,6 +40,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/shops/:sellerId" element={<SellerStore />} />
           <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
 
           <Route path="/" element={<PrivateRoute />}>
@@ -51,9 +54,17 @@ function App() {
             <Route path="/register" element={<Register />} />
           </Route>
 
+          <Route path="/" element={<PrivateRoute sellerOnly />}>
+            <Route path="/seller" element={<AdminLayout />}>
+              <Route index element={<SellerDashboard />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="orders" element={<Orders />} />
+            </Route>
+          </Route>
+
           <Route path="/" element={<PrivateRoute adminOnly />}>
             <Route path="/admin" element={<AdminLayout />}>
-              <Route path="" element={<Dashboard />} />
+              <Route index element={<Dashboard />} />
               <Route path="products" element={<AdminProducts />} />
               <Route path="sellers" element={<Sellers />} />
               <Route path="orders" element={<Orders />} />

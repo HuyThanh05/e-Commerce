@@ -1,4 +1,4 @@
-import { Avatar, Button, Menu, MenuItem } from "@mui/material";
+import { Avatar, Menu, MenuItem } from "@mui/material";
 import React from "react";
 import { BiUser } from "react-icons/bi";
 import { FaShoppingCart, FaUserShield } from "react-icons/fa";
@@ -55,19 +55,19 @@ const UserMenu = () => {
           </MenuItem>
         </Link>
 
-        <Link to="/profile#addresses">
+        {!isSeller && <Link to="/profile#addresses">
           <MenuItem className="flex gap-2" onClick={handleClose}>
             <FaShoppingCart className="text-xl" />
             <span className="font-semibold">Địa chỉ</span>
           </MenuItem>
-        </Link>
+        </Link>}
 
         {(isAdmin || isSeller) && (
-          <Link to={isAdmin ? "/admin" : "/admin/orders"}>
+          <Link to={isAdmin ? "/admin" : "/seller"}>
             <MenuItem className="flex gap-2" onClick={handleClose}>
               <FaUserShield className="text-xl" />
               <span className="font-semibold">
-                {isAdmin ? "Admin Panel" : "Seller Panel"}
+                {isAdmin ? "Trang quản trị" : "Kênh người bán"}
               </span>
             </MenuItem>
           </Link>

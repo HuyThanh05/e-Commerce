@@ -9,16 +9,19 @@ const Orders = () => {
   // const pagination = { pageNumber: 0, pageSize: 50, totalElements: 11, totalPages: 1, lastPage: true };
 
   const { adminOrder, pagination } = useSelector((state) => state.order);
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = user?.roles?.includes("ROLE_ADMIN");
 
   useOrderFilter();
 
   const emptyOrder = !adminOrder || adminOrder?.length === 0;
   return (
-    <div className="pb-6 pt-20">
+    <div className="pb-6">
+      <div className="management-section-heading"><div><span>{isAdmin ? "TOÀN HỆ THỐNG" : "VẬN HÀNH CỬA HÀNG"}</span><h1>{isAdmin ? "Quản lý đơn hàng" : "Đơn hàng của tôi"}</h1><p>Theo dõi và cập nhật trạng thái xử lý đơn hàng.</p></div></div>
       {emptyOrder ? (
         <div className="flex flex-col items-center justify-center text-gray-600 py-10">
           <FaShoppingCart size={50} className="mb-3" />
-          <h2 className="text-2xl font-semibold">No Orders Placed Yet</h2>
+          <h2 className="text-2xl font-semibold">Chưa có đơn hàng nào</h2>
         </div>
       ) : (
         <OrderTable adminOrder={adminOrder} pagination={pagination} />

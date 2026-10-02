@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { MdAddShoppingCart } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "../../shared/Loader";
@@ -43,6 +43,10 @@ const AdminProducts = () => {
 
   const { user } = useSelector((state) => state.auth);
   const isAdmin = user && user?.roles?.includes("ROLE_ADMIN");
+
+  useEffect(() => {
+    if (searchParams.get("new") === "true") setOpenAddModal(true);
+  }, [searchParams]);
 
   useDashboardProductFilter();
 
@@ -101,21 +105,17 @@ const AdminProducts = () => {
   const emptyProduct = !products || products?.length === 0;
   return (
     <div>
-      <div className="pt-6 pb-10 flex justify-end">
+      <div className="management-section-heading">
+        <div><span>{isAdmin ? "QUẢN TRỊ DANH MỤC" : "GIAN HÀNG CỦA BẠN"}</span><h1>{isAdmin ? "Tất cả sản phẩm" : "Sản phẩm của tôi"}</h1><p>{isAdmin ? "Quản lý toàn bộ sản phẩm trên hệ thống." : "Theo dõi thông tin, giá bán, hình ảnh và số lượng tồn kho."}</p></div>
         <button
           onClick={() => setOpenAddModal(true)}
           className="bg-custom-blue hover:bg-blue-800 text-white font-semibold py-2 px-4 flex items-center gap-2 rounded-md shadow-md transition-colors hover:text-slate-300 duration-300"
         >
           <MdAddShoppingCart className="text-xl" />
-          Add Product
+          Thêm sản phẩm
         </button>
       </div>
 
-      {!emptyProduct && (
-        <h1 className="text-slate-800 text-3xl text-center font-bold pb-6 uppercase">
-          All Products
-        </h1>
-      )}
       {isLoading ? (
         <Loader />
       ) : (
@@ -124,7 +124,7 @@ const AdminProducts = () => {
             <div className="flex flex-col items-center justify-center text-gray-600 py-10">
               <FaBoxOpen size={50} className="mb-3" />
               <h2 className="text-2xl font-semibold">
-                No products created yet
+                Chưa có sản phẩm nào
               </h2>
             </div>
           ) : (
@@ -167,7 +167,7 @@ const AdminProducts = () => {
       <Modal
         open={openUpdateModal || openAddModal}
         setOpen={openUpdateModal ? setOpenUpdateModal : setOpenAddModal}
-        title={openUpdateModal ? "Update Product" : "Add Product"}
+        title={openUpdateModal ? "Cập nhật sản phẩm" : "Thêm sản phẩm"}
       >
         <AddProductForm
           setOpen={openUpdateModal ? setOpenUpdateModal : setOpenAddModal}
@@ -179,7 +179,7 @@ const AdminProducts = () => {
       <Modal
         open={openImageUploadModal}
         setOpen={setOpenImageUploadModal}
-        title="Add Product Image"
+        title="Cập nhật ảnh sản phẩm"
       >
         <ImageUploadForm
           setOpen={setOpenImageUploadModal}
@@ -191,7 +191,7 @@ const AdminProducts = () => {
         open={openDeleteModal}
         setOpen={setOpenDeleteModal}
         loader={loader}
-        title="Delete Product"
+        title="Xóa sản phẩm"
         onDeleteHandler={onDeleteHandler}
       />
 

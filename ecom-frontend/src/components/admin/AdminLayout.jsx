@@ -2,20 +2,22 @@ import React, { useState } from "react";
 import Sidebar from "../shared/Sidebar";
 import { Outlet } from "react-router-dom";
 import {
-  Description,
   Dialog,
   DialogBackdrop,
   DialogPanel,
-  DialogTitle,
   TransitionChild,
 } from "@headlessui/react";
 import { RxCross1 } from "react-icons/rx";
 import { FaBars } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import "./admin-layout.css";
 
 const AdminLayout = () => {
   let [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = user?.roles?.includes("ROLE_ADMIN");
   return (
-    <div>
+    <div className="management-layout">
       <Dialog
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -52,7 +54,7 @@ const AdminLayout = () => {
         <Sidebar />
       </div>
 
-      <div className="xl:pl-72">
+      <div className="xl:pl-72 management-content">
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
@@ -62,8 +64,12 @@ const AdminLayout = () => {
           <FaBars className="text-slate-800 text-2xl" />
         </button>
 
-        <main className="">
-          <div className="p-4 sm:p-6 xl:p-8">
+        <header className="management-topbar">
+          <div><span>{isAdmin ? "AMAZING ADMIN" : "AMAZING SELLER"}</span><strong>{isAdmin ? "Trung tâm quản trị" : "Kênh người bán"}</strong></div>
+          <div className="management-account"><span>{user?.username?.slice(0, 1)?.toUpperCase()}</span><div><strong>{user?.username}</strong><small>{isAdmin ? "Quản trị viên" : "Người bán"}</small></div></div>
+        </header>
+        <main>
+          <div className="management-page">
             <Outlet />
           </div>
         </main>

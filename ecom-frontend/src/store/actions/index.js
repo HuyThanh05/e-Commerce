@@ -149,7 +149,13 @@ export const authenticateSignInUser =
       localStorage.setItem("auth", JSON.stringify(data));
       reset();
       toast.success("Login Success");
-      navigate("/");
+      if (data?.roles?.includes("ROLE_ADMIN")) {
+        navigate("/admin");
+      } else if (data?.roles?.includes("ROLE_SELLER")) {
+        navigate("/seller");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message || "Internal Server Error");
