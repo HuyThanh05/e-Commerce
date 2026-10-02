@@ -46,7 +46,10 @@ public class User {
 
     @Setter
     @Getter
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
+    // Roles have their own lifecycle and are shared by many users. Cascading PERSIST
+    // here makes Hibernate try to insert an already existing (detached) role when a
+    // new user is created.
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
