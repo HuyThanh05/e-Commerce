@@ -26,11 +26,15 @@ import Profile from "./components/profile/Profile";
 import Wishlist from "./components/wishlist/Wishlist";
 import SellerDashboard from "./components/seller/SellerDashboard";
 import SellerStore from "./components/seller/SellerStore";
+import ChatPage from "./components/chat/ChatPage";
+import ChatSocketBridge from "./components/chat/ChatSocketBridge";
+import CustomerOrders from "./components/orders/CustomerOrders";
 
 function App() {
   return (
     <React.Fragment>
       <Router>
+        <ChatSocketBridge />
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -47,6 +51,8 @@ function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-confirm" element={<PaymentConfirmation />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/messages" element={<ChatPage />} />
+            <Route path="/orders" element={<CustomerOrders />} />
           </Route>
 
           <Route path="/" element={<PrivateRoute publicPage />}>
@@ -59,6 +65,7 @@ function App() {
               <Route index element={<SellerDashboard />} />
               <Route path="products" element={<AdminProducts />} />
               <Route path="orders" element={<Orders />} />
+              <Route path="messages" element={<ChatPage />} />
             </Route>
           </Route>
 

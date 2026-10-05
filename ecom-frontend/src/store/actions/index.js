@@ -376,7 +376,7 @@ export const analyticsAction = () => async (dispatch, getState) => {
 };
 
 export const getOrdersForDashboard =
-  (queryString, isAdmin) => async (dispatch) => {
+  (queryString = "", isAdmin = false) => async (dispatch) => {
     try {
       dispatch({ type: "IS_FETCHING" });
       const endpoint = isAdmin ? "/admin/orders" : "/seller/orders";
@@ -411,7 +411,7 @@ export const updateOrderStatusFromDashboard =
         status: orderStatus,
       });
       toast.success(data.message || "Order updated successfully");
-      await dispatch(getOrdersForDashboard());
+      await dispatch(getOrdersForDashboard("pageNumber=0", isAdmin));
     } catch (error) {
       console.log(error);
       toast.error(error?.response?.data?.message || "Internal Server Error");

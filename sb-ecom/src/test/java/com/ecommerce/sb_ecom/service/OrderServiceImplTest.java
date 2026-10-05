@@ -89,4 +89,38 @@ class OrderServiceImplTest {
         assertSame(dto, result);
         verify(orderRepository).save(order);
     }
+
+    @Test
+    void sellerCanAdvanceOwnedOrderToNextStatus() {
+        User seller = new User(); seller.setUserId(21L);
+        Product product = new Product(); product.setUser(seller);
+        OrderItem item = new OrderItem(); item.setProduct(product);
+        Order order = new Order(); order.setOrderId(12L); order.setOrderStatus("Pending"); order.setOrderItems(List.of(item));
+        OrderDTO dto = new OrderDTO(); dto.setOrderStatus("Confirmed");
+
+        when(authUtil.loggedInUser()).thenReturn(seller);
+        when(orderRepository.findById(12L)).thenReturn(Optional.of(order));
+        when(orderRepository.save(order)).thenReturn(order);
+        when(modelMapper.map(order, OrderDTO.class)).thenReturn(dto);
+
+        OrderDTO result = service.updateSellerOrder(12L, "Confirmed");
+
+        assertEquals("Confirmed", order.getOrderStatus());
+        assertNotNull(order.getConfirmedAt());
+        assertSame(dto, result);
+    }
+
+    @Test
+    void sellerCannotSkipOrderStatus() {
+        User seller = new User(); seller.setUserId(21L);
+        Product product = new Product(); product.setUser(seller);
+        OrderItem item = new OrderItem(); item.setProduct(product);
+        Order order = new Order(); order.setOrderId(13L); order.setOrderStatus("Pending"); order.setOrderItems(List.of(item));
+
+        when(authUtil.loggedInUser()).thenReturn(seller);
+        when(orderRepository.findById(13L)).thenReturn(Optional.of(order));
+
+        assertThrows(APIException.class, () -> service.updateSellerOrder(13L, "Shipping"));
+        verify(orderRepository, never()).save(order);
+    }
 }

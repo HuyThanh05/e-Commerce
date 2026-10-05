@@ -4,6 +4,7 @@ import {
   FaShoppingCart,
   FaStore,
   FaThList,
+  FaComments,
 } from "react-icons/fa";
 import { bannerImageOne, bannerImageThree, bannerImageTwo } from "./constant";
 
@@ -76,5 +77,10 @@ export const sellerNavigation = [
     name: "Đơn hàng",
     href: "/seller/orders",
     icon: FaShoppingCart,
+  },
+  {
+    name: "Tin nhắn",
+    href: "/seller/messages",
+    icon: FaComments,
   },
 ];

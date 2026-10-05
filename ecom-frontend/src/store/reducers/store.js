@@ -8,6 +8,7 @@ import { adminReducer } from "./adminReducer";
 import { orderReducer } from "./orderReducer";
 import { sellerReducer } from "./sellerReducer";
 import { wishlistReducer } from "./wishlistReducer";
+import { chatReducer } from "./chatReducer";
 
 const user = localStorage.getItem("auth")
   ? JSON.parse(localStorage.getItem("auth"))
@@ -42,6 +43,7 @@ export const store = configureStore({
     order: orderReducer,
     seller: sellerReducer,
     wishlist: wishlistReducer,
+    chat: chatReducer,
   },
   preloadedState: initialState,
 });

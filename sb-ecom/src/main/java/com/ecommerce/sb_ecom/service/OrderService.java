@@ -12,5 +12,13 @@ public interface OrderService {
 
     OrderDTO updateOrder(Long orderId, String status);
 
+    OrderDTO updateSellerOrder(Long orderId, String status);
+
+    java.util.List<OrderDTO> getCurrentUserOrders();
+
+    OrderDTO getCurrentUserOrder(Long orderId);
+
+    OrderDTO cancelCurrentUserOrder(Long orderId);
+
     OrderResponse getAllSellerOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 }

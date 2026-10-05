@@ -1,7 +1,7 @@
 import { Avatar, Menu, MenuItem } from "@mui/material";
 import React from "react";
 import { BiUser } from "react-icons/bi";
-import { FaShoppingCart, FaUserShield } from "react-icons/fa";
+import { FaBoxOpen, FaShoppingCart, FaUserShield } from "react-icons/fa";
 import { IoExitOutline } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
@@ -59,6 +59,13 @@ const UserMenu = () => {
           <MenuItem className="flex gap-2" onClick={handleClose}>
             <FaShoppingCart className="text-xl" />
             <span className="font-semibold">Địa chỉ</span>
+          </MenuItem>
+        </Link>}
+
+        {!isSeller && !isAdmin && <Link to="/orders">
+          <MenuItem className="flex gap-2" onClick={handleClose}>
+            <FaBoxOpen className="text-xl" />
+            <span className="font-semibold">Đơn mua</span>
           </MenuItem>
         </Link>}
 

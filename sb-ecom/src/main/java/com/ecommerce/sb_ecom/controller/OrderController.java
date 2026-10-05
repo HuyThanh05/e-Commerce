@@ -76,7 +76,22 @@ public class OrderController {
 
     @PutMapping("/seller/orders/{orderId}/status")
     public ResponseEntity<OrderDTO> updateOrderStatusSeller(@PathVariable Long orderId, @RequestBody OrderStatusUpdateDto orderStatusUpdateDto) {
-        OrderDTO order = orderService.updateOrder(orderId, orderStatusUpdateDto.getStatus());
+        OrderDTO order = orderService.updateSellerOrder(orderId, orderStatusUpdateDto.getStatus());
         return new ResponseEntity<OrderDTO>(order, HttpStatus.OK);
+    }
+
+    @GetMapping("/orders/me")
+    public ResponseEntity<java.util.List<OrderDTO>> getCurrentUserOrders() {
+        return ResponseEntity.ok(orderService.getCurrentUserOrders());
+    }
+
+    @GetMapping("/orders/me/{orderId}")
+    public ResponseEntity<OrderDTO> getCurrentUserOrder(@PathVariable Long orderId) {
+        return ResponseEntity.ok(orderService.getCurrentUserOrder(orderId));
+    }
+
+    @PutMapping("/orders/me/{orderId}/cancel")
+    public ResponseEntity<OrderDTO> cancelCurrentUserOrder(@PathVariable Long orderId) {
+        return ResponseEntity.ok(orderService.cancelCurrentUserOrder(orderId));
     }
 }

@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -89,7 +90,8 @@ public class OrderServiceImpl implements OrderService {
         order.setEmail(emailId);
         order.setOrderDate(LocalDate.now());
         order.setTotalAmount(cart.getTotalPrice());
-        order.setOrderStatus("Accepted");
+        order.setOrderStatus(OrderStatus.PENDING.value());
+        order.setStatusUpdatedAt(LocalDateTime.now());
         order.setAddress(address);
 
         Payment payment = new Payment(paymentMethod, pgPaymentId, pgStatus, pgResponseMessage, pgName);
@@ -124,7 +126,7 @@ public class OrderServiceImpl implements OrderService {
         });
 
         // Send back the order summary
-        OrderDTO orderDTO = modelMapper.map(savedOrder, OrderDTO.class);
+        OrderDTO orderDTO = toOrderDTO(savedOrder);
         orderItems.forEach(item -> orderDTO.getOrderItems().add(modelMapper.map(item, OrderItemDTO.class)));
         orderDTO.setAddressId(addressId);
         return orderDTO;
@@ -161,7 +163,7 @@ public class OrderServiceImpl implements OrderService {
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
         Page<Order> pageOrders = orderRepository.findAll(pageDetails);
         List<Order> orders = pageOrders.getContent();
-        List<OrderDTO> orderDTOs = orders.stream().map(order -> modelMapper.map(order, OrderDTO.class)).toList();
+        List<OrderDTO> orderDTOs = orders.stream().map(this::toOrderDTO).toList();
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setContent(orderDTOs);
         orderResponse.setPageNumber(pageOrders.getNumber());
@@ -176,8 +178,69 @@ public class OrderServiceImpl implements OrderService {
     public OrderDTO updateOrder(Long orderId, String status) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException("Order", "orderId", orderId));
         order.setOrderStatus(status);
+        applyStatusTimestamp(order, OrderStatus.from(status));
         orderRepository.save(order);
-        return modelMapper.map(order, OrderDTO.class);
+        return toOrderDTO(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderDTO updateSellerOrder(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "orderId", orderId));
+        User seller = authUtil.loggedInUser();
+        assertSellerOwnsOrder(order, seller);
+
+        OrderStatus current = OrderStatus.from(order.getOrderStatus());
+        OrderStatus next = OrderStatus.from(status);
+        boolean valid = switch (current) {
+            case PENDING -> next == OrderStatus.CONFIRMED;
+            case CONFIRMED -> next == OrderStatus.PREPARING;
+            case PREPARING -> next == OrderStatus.SHIPPING;
+            case SHIPPING -> next == OrderStatus.DELIVERED || next == OrderStatus.DELIVERY_FAILED;
+            default -> false;
+        };
+        if (!valid) {
+            throw new APIException("Cannot change order status from " + current.value() + " to " + next.value());
+        }
+        order.setOrderStatus(next.value());
+        applyStatusTimestamp(order, next);
+        return toOrderDTO(orderRepository.save(order));
+    }
+
+    @Override
+    public List<OrderDTO> getCurrentUserOrders() {
+        return orderRepository.findByEmailOrderByOrderDateDescOrderIdDesc(authUtil.loggedInEmail())
+                .stream().map(this::toOrderDTO).toList();
+    }
+
+    @Override
+    public OrderDTO getCurrentUserOrder(Long orderId) {
+        Order order = getOwnedCustomerOrder(orderId);
+        return toOrderDTO(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderDTO cancelCurrentUserOrder(Long orderId) {
+        Order order = getOwnedCustomerOrder(orderId);
+        OrderStatus current = OrderStatus.from(order.getOrderStatus());
+        if (current != OrderStatus.PENDING) {
+            throw new APIException("Only pending orders can be cancelled");
+        }
+        order.setOrderStatus(OrderStatus.CANCELLED.value());
+        applyStatusTimestamp(order, OrderStatus.CANCELLED);
+        for (OrderItem item : order.getOrderItems()) {
+            Product product = item.getProduct();
+            if (product != null) {
+                product.setQuantity(product.getQuantity() + item.getQuantity());
+                productRepository.save(product);
+            }
+        }
+        if (order.getPayment() != null && "stripe".equalsIgnoreCase(order.getPayment().getPgName())) {
+            order.getPayment().setPgStatus("refund_pending");
+        }
+        return toOrderDTO(orderRepository.save(order));
     }
 
 //    @Override
@@ -233,7 +296,7 @@ public class OrderServiceImpl implements OrderService {
         int toIndex = Math.min(fromIndex + pageSize, totalElements);
         List<Order> pagedSellerOrders = sellerOrders.subList(fromIndex, toIndex);
 
-        List<OrderDTO> orderDTOs = pagedSellerOrders.stream().map(order -> modelMapper.map(order, OrderDTO.class)).toList();
+        List<OrderDTO> orderDTOs = pagedSellerOrders.stream().map(order -> toSellerOrderDTO(order, seller)).toList();
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setContent(orderDTOs);
         orderResponse.setPageNumber(pageNumber);
@@ -242,5 +305,56 @@ public class OrderServiceImpl implements OrderService {
         orderResponse.setTotalPages(totalPages);
         orderResponse.setLastPage(pageNumber >= totalPages - 1);
         return orderResponse;
+    }
+
+    private Order getOwnedCustomerOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "orderId", orderId));
+        if (!order.getEmail().equalsIgnoreCase(authUtil.loggedInEmail())) {
+            throw new APIException("You are not allowed to access this order");
+        }
+        return order;
+    }
+
+    private void assertSellerOwnsOrder(Order order, User seller) {
+        boolean ownsItem = order.getOrderItems().stream().anyMatch(item -> item.getProduct() != null
+                && item.getProduct().getUser() != null
+                && item.getProduct().getUser().getUserId().equals(seller.getUserId()));
+        if (!ownsItem) throw new APIException("You are not allowed to update this order");
+    }
+
+    private void applyStatusTimestamp(Order order, OrderStatus status) {
+        LocalDateTime now = LocalDateTime.now();
+        order.setStatusUpdatedAt(now);
+        switch (status) {
+            case CONFIRMED -> order.setConfirmedAt(now);
+            case PREPARING -> order.setPreparingAt(now);
+            case SHIPPING, DELIVERY_FAILED -> order.setShippedAt(order.getShippedAt() == null ? now : order.getShippedAt());
+            case DELIVERED -> order.setDeliveredAt(now);
+            case CANCELLED -> order.setCancelledAt(now);
+            default -> { }
+        }
+    }
+
+    private OrderDTO toOrderDTO(Order order) {
+        OrderDTO dto = modelMapper.map(order, OrderDTO.class);
+        if (dto.getOrderItems() == null) dto.setOrderItems(new ArrayList<>());
+        if (order.getAddress() != null) {
+            dto.setAddressId(order.getAddress().getAddressId());
+            dto.setAddress(modelMapper.map(order.getAddress(), com.ecommerce.sb_ecom.payload.AddressDTO.class));
+        }
+        return dto;
+    }
+
+    private OrderDTO toSellerOrderDTO(Order order, User seller) {
+        OrderDTO dto = toOrderDTO(order);
+        List<OrderItemDTO> sellerItems = order.getOrderItems().stream()
+                .filter(item -> item.getProduct() != null && item.getProduct().getUser() != null
+                        && item.getProduct().getUser().getUserId().equals(seller.getUserId()))
+                .map(item -> modelMapper.map(item, OrderItemDTO.class)).toList();
+        dto.setOrderItems(new ArrayList<>(sellerItems));
+        dto.setTotalAmount(sellerItems.stream()
+                .mapToDouble(item -> item.getOrderedProductPrice() * item.getQuantity()).sum());
+        return dto;
     }
 }
