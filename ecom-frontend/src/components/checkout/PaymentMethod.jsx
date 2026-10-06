@@ -25,7 +25,7 @@ const PaymentMethod = () => {
 
       dispatch(createUserCart(sendCartItems));
     }
-  }, [dispatch, cartId]);
+  }, [dispatch, cart, cartId, errorMessage]);
 
   const paymentMethodHandler = (method) => {
     dispatch(addPaymentMethod(method));

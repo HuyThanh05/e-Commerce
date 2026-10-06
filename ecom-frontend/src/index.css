@@ -61,6 +61,15 @@
   }
 }
 
+/* Consistent pointer feedback for every interactive control. */
+a[href], button:not(:disabled), [role="button"]:not([aria-disabled="true"]),
+input[type="checkbox"], input[type="radio"], select, summary, label[for],
+.MuiButtonBase-root:not(.Mui-disabled) { cursor: pointer !important; }
+button:disabled, [aria-disabled="true"], .Mui-disabled { cursor: not-allowed !important; }
+.deal-card__image img, .deal-card h3,
+.market-product-card__image, .market-product-card h3,
+.related-grid article { cursor: pointer; }
+
 /* Public storefront typography: one readable family across every page. */
 body, body * { font-family: "Be Vietnam Pro", "Segoe UI", sans-serif !important; }
 
@@ -142,3 +151,99 @@ body, body * { font-family: "Be Vietnam Pro", "Segoe UI", sans-serif !important;
 .footer-brand p, .footer-shell > div:not(:first-child) a,
 .footer-shell > div:not(:first-child) > span { font-size: 11px; }
 .footer-bottom { font-size: 10px; }
+
+/* Unified readable typography scale across the storefront. */
+:root {
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+}
+
+body { font-size: var(--text-md); }
+
+/* Header and footer */
+.market-search input, .market-search button,
+.market-nav .market-shell, .market-products-dropdown a { font-size: 13px !important; }
+.footer-brand p, .footer-shell h3,
+.footer-shell > div:not(:first-child) a,
+.footer-shell > div:not(:first-child) > span { font-size: 13px !important; }
+.footer-bottom { font-size: 12px !important; }
+
+/* Product listing and detail */
+.market-product-card__rating, .deal-card__rating,
+.market-product-card p, .deal-card p { font-size: 12px !important; }
+.market-product-card h3, .deal-card h3 { font-size: 15px !important; }
+.market-product-card__body > button, .deal-card__body > button { font-size: 13px !important; }
+.product-breadcrumb, .product-meta, .product-description,
+.product-option, .shipping-row, .product-assurance,
+.product-information h3, .product-information li,
+.product-information aside p, .product-information aside a,
+.related-heading > a, .related-grid h3 { font-size: 13px !important; }
+.product-price-box small, .shipping-row small,
+.product-seller span, .product-seller button,
+.related-heading span, .product-information aside > span { font-size: 12px !important; }
+.product-seller strong { font-size: 14px !important; }
+
+/* Cart and checkout */
+.cart-list-header, .cart-store > header,
+.cart-item__info h3, .cart-item__price strong,
+.cart-item__total strong, .cart-shipping-note,
+.cart-continue, .coupon-card input, .coupon-card button,
+.summary-line, .summary-total span, .checkout-button { font-size: 13px !important; }
+.cart-list-header small, .cart-item__info span,
+.cart-item__price del, .cart-item__total button,
+.coupon-card > small, .summary-total small,
+.order-summary > p { font-size: 12px !important; }
+
+/* Profile, About and Contact */
+.profile-breadcrumb, .profile-banner span, .profile-banner p,
+.profile-menu a, .profile-fields label, .profile-fields strong,
+.profile-note, .address-grid h3, .address-grid p,
+.profile-empty p, .brand-kicker, .brand-value p,
+.brand-story p, .contact-info > span, .contact-info > p,
+.contact-card strong, .contact-card small,
+.contact-form label, .contact-form input,
+.contact-form textarea, .contact-form button { font-size: 13px !important; }
+
+/* Real-time chat */
+.conversation-copy strong, .conversation-copy small,
+.chat-main-header div strong, .chat-main-header div small,
+.chat-product div strong, .chat-product div span,
+.chat-product a, .message-day, .message-row p,
+.message-row small, .chat-suggestions button,
+.chat-composer input, .chat-profile-summary small,
+.chat-profile-summary > a, .chat-profile-options h3,
+.chat-profile-options button, .chat-report,
+.chat-empty-small a, .chat-empty-main p { font-size: 12px !important; }
+
+/* Customer order tracking */
+.order-tabs button, .order-list > button div strong,
+.order-list > button span, .order-list > button b,
+.order-status-hero > span, .order-status-hero p,
+.order-progress strong, .order-progress small,
+.order-journey header small, .delivery-address small,
+.order-journey header strong, .order-journey header > span,
+.journey-list time, .journey-list strong, .journey-list p,
+.cancel-order, .delivery-address > strong, .delivery-address p,
+.ordered-products > header, .ordered-products article strong,
+.ordered-products article small, .ordered-products article > b,
+.ordered-products footer, .order-help strong, .order-help p,
+.orders-empty a { font-size: 12px !important; }
+
+/* Seller and admin areas */
+.management-brand small, .management-topbar > div:first-child span,
+.management-account small, .management-section-heading > div > span,
+.seller-orders small, .seller-order-status,
+.seller-quick a small, .seller-stock-warning span small,
+.seller-empty span { font-size: 12px !important; }
+.management-link, .management-store-link,
+.management-account strong, .management-section-heading p,
+.seller-orders > div, .seller-quick a strong,
+.seller-stock-warning span strong { font-size: 13px !important; }
+
+@media (max-width: 560px) {
+  body { font-size: 14px; }
+  .market-nav .market-shell { font-size: 12px !important; }
+  .product-summary h1 { font-size: 23px !important; }
+}

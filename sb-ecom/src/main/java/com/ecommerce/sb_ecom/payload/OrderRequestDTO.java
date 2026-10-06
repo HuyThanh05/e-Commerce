@@ -3,6 +3,7 @@ package com.ecommerce.sb_ecom.payload;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -14,4 +15,5 @@ public class OrderRequestDTO {
     private String pgPaymentId;
     private String pgStatus;
     private String pgResponseMessage;
+    private List<Long> productIds;
 }

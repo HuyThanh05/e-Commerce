@@ -10,11 +10,18 @@ import {
 import { RxCross1 } from "react-icons/rx";
 import { FaBars } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { FiLogOut } from "react-icons/fi";
+import { logOutUser } from "../../store/actions";
 import "./admin-layout.css";
 
 const AdminLayout = () => {
   let [sidebarOpen, setSidebarOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const isAdmin = user?.roles?.includes("ROLE_ADMIN");
   return (
     <div className="management-layout">
@@ -66,7 +73,12 @@ const AdminLayout = () => {
 
         <header className="management-topbar">
           <div><span>{isAdmin ? "AMAZING ADMIN" : "AMAZING SELLER"}</span><strong>{isAdmin ? "Trung tâm quản trị" : "Kênh người bán"}</strong></div>
-          <div className="management-account"><span>{user?.username?.slice(0, 1)?.toUpperCase()}</span><div><strong>{user?.username}</strong><small>{isAdmin ? "Quản trị viên" : "Người bán"}</small></div></div>
+          <div className="management-account-wrap">
+            <button type="button" className="management-account" onClick={() => setAccountOpen((current) => !current)} aria-expanded={accountOpen}>
+              <span>{user?.username?.slice(0, 1)?.toUpperCase()}</span><div><strong>{user?.username}</strong><small>{isAdmin ? "Quản trị viên" : "Người bán"}</small></div>
+            </button>
+            {accountOpen && <div className="management-account-menu"><button type="button" onClick={() => dispatch(logOutUser(navigate))}><FiLogOut /> Đăng xuất</button></div>}
+          </div>
         </header>
         <main>
           <div className="management-page">

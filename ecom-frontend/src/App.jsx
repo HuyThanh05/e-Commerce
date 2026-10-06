@@ -42,12 +42,15 @@ function App() {
           <Route path="/products/:productId" element={<ProductDetails />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/shops/:sellerId" element={<SellerStore />} />
           <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
 
-          <Route path="/" element={<PrivateRoute />}>
+          <Route path="/" element={<PrivateRoute buyerOnly />}>
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+          </Route>
+
+          <Route path="/" element={<PrivateRoute customerOnly />}>
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-confirm" element={<PaymentConfirmation />} />
             <Route path="/profile" element={<Profile />} />

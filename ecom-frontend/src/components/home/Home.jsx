@@ -34,19 +34,20 @@ const HomeProductCard = ({ product, onAdd }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const wished = useSelector((state) => state.wishlist.items.some((item) => item.productId === product.productId));
+  const isSeller = useSelector((state) => state.auth.user?.roles?.includes("ROLE_SELLER"));
   const finalPrice = product.specialPrice || product.price;
   const available = Number(product.quantity) > 0;
   return <article className="deal-card">
     <div className="deal-card__image">
       {product.discount > 0 && <span>-{Math.round(product.discount)}%</span>}
-      <button type="button" className={wished ? "is-wished" : ""} onClick={() => dispatch(toggleWishlist(product, toast))} aria-label={wished ? "Bỏ yêu thích" : "Thêm yêu thích"}><FiHeart /></button>
+      {!isSeller && <button type="button" className={wished ? "is-wished" : ""} onClick={() => dispatch(toggleWishlist(product, toast))} aria-label={wished ? "Bỏ yêu thích" : "Thêm yêu thích"}><FiHeart /></button>}
       <img onClick={() => navigate(`/products/${product.productId}`)} src={getImageUrl(product.image)} alt={product.productName} />
     </div>
     <div className="deal-card__body">
-      <div className="deal-card__rating">★ 4.9 <small>· Sản phẩm nổi bật</small></div>
+      <div className="deal-card__rating">{product.reviewCount > 0 ? `★ ${Number(product.averageRating).toFixed(1)}` : "☆ Chưa có đánh giá"} <small>· Đã bán {product.soldQuantity || 0}</small></div>
       <h3 onClick={() => navigate(`/products/${product.productId}`)}>{product.productName}</h3>
       <div className="deal-card__price"><strong>{formatPrice(finalPrice)}</strong>{product.specialPrice > 0 && <del>{formatPrice(product.price)}</del>}</div>
-      <button type="button" disabled={!available} onClick={() => onAdd(product)}><FiShoppingCart /> {available ? "Thêm vào giỏ" : "Hết hàng"}</button>
+      {!isSeller && <button type="button" disabled={!available} onClick={() => onAdd(product)}><FiShoppingCart /> {available ? "Thêm vào giỏ" : "Hết hàng"}</button>}
     </div>
   </article>;
 };

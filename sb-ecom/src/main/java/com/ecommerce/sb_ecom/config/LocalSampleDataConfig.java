@@ -29,6 +29,21 @@ public class LocalSampleDataConfig {
                                         RoleRepository roleRepository,
                                         PasswordEncoder passwordEncoder) {
         return args -> {
+            Role adminRole = roleRepository.findByRoleName(AppRole.ROLE_ADMIN)
+                    .orElseGet(() -> roleRepository.save(new Role(AppRole.ROLE_ADMIN)));
+            User admin = userRepository.findByUserName("admin").orElseGet(() -> {
+                User localAdmin = new User(
+                        "admin",
+                        "admin@amazingshop.local",
+                        passwordEncoder.encode("Admin@123"));
+                localAdmin.setRoles(new HashSet<>(List.of(adminRole)));
+                return userRepository.save(localAdmin);
+            });
+            if (admin.getRoles().stream().noneMatch(role -> role.getRoleName() == AppRole.ROLE_ADMIN)) {
+                admin.getRoles().add(adminRole);
+                userRepository.save(admin);
+            }
+
             Role sellerRole = roleRepository.findByRoleName(AppRole.ROLE_SELLER)
                     .orElseGet(() -> roleRepository.save(new Role(AppRole.ROLE_SELLER)));
             User seller = userRepository.findByUserName("seller").orElseGet(() -> {

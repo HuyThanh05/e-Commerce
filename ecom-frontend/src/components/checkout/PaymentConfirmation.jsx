@@ -11,7 +11,7 @@ const PaymentConfirmation = () => {
   const searchParams = new URLSearchParams(location.search);
   const dispatch = useDispatch();
   const [errorMessage, setErrorMessage] = useState("");
-  const { cart } = useSelector((state) => state.carts);
+  const { cart, selectedProductIds = [] } = useSelector((state) => state.carts);
   const [loading, setLoading] = useState(false);
 
   const paymentIntent = searchParams.get("payment_intent");
@@ -35,12 +35,15 @@ const PaymentConfirmation = () => {
         pgPaymentId: paymentIntent,
         pgStatus: "succeeded",
         pgResponseMessage: "Payment successful",
+        productIds: selectedProductIds.length
+          ? selectedProductIds
+          : JSON.parse(localStorage.getItem("selectedCartIds") || "[]"),
       };
       dispatch(
         stripePaymentConfirmation(sendData, setErrorMessage, setLoading, toast),
       );
     }
-  }, [paymentIntent, clientSecret, redirectStatus, cart]);
+  }, [paymentIntent, clientSecret, redirectStatus, cart, dispatch, selectedProductIds, selectedUserCheckoutAddress.addressId]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

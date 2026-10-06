@@ -104,7 +104,7 @@ const ChatPage = () => {
             const own = String(message.senderId) === String(user?.id);
             return <div className={`message-row ${own ? "own" : ""}`} key={message.messageId}>{!own && <span className="chat-avatar tiny">{initials(message.senderName)}</span>}<div><p>{message.content}</p><small>{timeLabel(message.sentAt)}</small></div></div>;
           })}<div ref={endRef}/></div>
-          <div className="chat-suggestions">{["Sản phẩm còn hàng không?", "Khi nào shop giao hàng?", "Có được kiểm hàng không?"].map((suggestion) => <button key={suggestion} onClick={(event) => send(event, suggestion)}>{suggestion}</button>)}</div>
+          {!isSeller && <div className="chat-suggestions">{["Sản phẩm còn hàng không?", "Khi nào shop giao hàng?", "Có được kiểm hàng không?"].map((suggestion) => <button key={suggestion} onClick={(event) => send(event, suggestion)}>{suggestion}</button>)}</div>}
           <form className="chat-composer" onSubmit={send}><button type="button" aria-label="Gửi ảnh"><FiImage /></button><button type="button" aria-label="Đính kèm"><FiPaperclip /></button><input value={content} onChange={(event) => setContent(event.target.value)} placeholder={connected ? "Nhập nội dung tin nhắn..." : "Đang kết nối chat..."}/><button className="send-button" disabled={!content.trim() || !connected}><FiSend /></button></form>
         </> : <div className="chat-empty-main"><FiMessageCircle /><h2>Chọn một cuộc trò chuyện</h2><p>Tin nhắn với người bán hoặc khách hàng sẽ hiển thị tại đây.</p></div>}
       </section>

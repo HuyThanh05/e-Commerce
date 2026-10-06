@@ -18,6 +18,10 @@ const cartItems = localStorage.getItem("cartItems")
   ? JSON.parse(localStorage.getItem("cartItems"))
   : [];
 
+const selectedProductIds = localStorage.getItem("selectedCartIds")
+  ? JSON.parse(localStorage.getItem("selectedCartIds"))
+  : cartItems.map((item) => item.productId);
+
 const selectUserCheckoutAddress = localStorage.getItem("CHECKOUT_ADDRESS")
   ? JSON.parse(localStorage.getItem("CHECKOUT_ADDRESS"))
   : [];
@@ -28,7 +32,7 @@ const wishlistItems = localStorage.getItem("wishlistItems")
 
 const initialState = {
   auth: { user: user, selectUserCheckoutAddress },
-  carts: { cart: cartItems },
+  carts: { cart: cartItems, selectedProductIds },
   wishlist: { items: wishlistItems },
 };
 

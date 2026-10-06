@@ -59,6 +59,12 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDTO placeOrder(String emailId, Long addressId, String paymentMethod, String pgName, String pgPaymentId, String pgStatus, String pgResponseMessage) {
+        return placeOrder(emailId, addressId, paymentMethod, pgName, pgPaymentId, pgStatus, pgResponseMessage, null);
+    }
+
+    @Override
+    @Transactional
+    public OrderDTO placeOrder(String emailId, Long addressId, String paymentMethod, String pgName, String pgPaymentId, String pgStatus, String pgResponseMessage, List<Long> productIds) {
         // Getting User Cart
         Cart cart = cartRepository.findCartByEmail(emailId);
         if (cart == null) {
@@ -68,8 +74,11 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Address", "addressId", addressId));
 
         List<CartItem> cartItems = new ArrayList<>(cart.getCartItems());
+        if (productIds != null && !productIds.isEmpty()) {
+            cartItems.removeIf(item -> !productIds.contains(item.getProduct().getProductId()));
+        }
         if (cartItems.isEmpty()) {
-            throw new APIException("Cart is empty");
+            throw new APIException("No selected products were found in the cart");
         }
         cartItems.forEach(item -> {
             int requestedQuantity = item.getQuantity();
@@ -79,8 +88,12 @@ public class OrderServiceImpl implements OrderService {
             }
         });
 
+        double selectedTotal = cartItems.stream()
+                .mapToDouble(item -> item.getProductPrice() * item.getQuantity())
+                .sum();
+
         if ("stripe".equalsIgnoreCase(pgName)) {
-            verifyStripePayment(pgPaymentId, cart.getTotalPrice());
+            verifyStripePayment(pgPaymentId, selectedTotal);
             pgStatus = "succeeded";
             pgResponseMessage = "Payment verified by Stripe";
         }
@@ -89,7 +102,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setEmail(emailId);
         order.setOrderDate(LocalDate.now());
-        order.setTotalAmount(cart.getTotalPrice());
+        order.setTotalAmount(selectedTotal);
         order.setOrderStatus(OrderStatus.PENDING.value());
         order.setStatusUpdatedAt(LocalDateTime.now());
         order.setAddress(address);

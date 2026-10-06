@@ -28,15 +28,19 @@ public class OrderController {
     @PostMapping("/order/users/payments/{paymentMethod}")
     public ResponseEntity<OrderDTO> orderProducts(@PathVariable String paymentMethod, @RequestBody OrderRequestDTO orderRequestDTO) {
         String emailId = authUtil.loggedInEmail();
-        OrderDTO order = orderService.placeOrder(
-                emailId,
-                orderRequestDTO.getAddressId(),
-                paymentMethod,
-                orderRequestDTO.getPgName(),
-                orderRequestDTO.getPgPaymentId(),
-                orderRequestDTO.getPgStatus(),
-                orderRequestDTO.getPgResponseMessage()
-        );
+        OrderDTO order;
+        if (orderRequestDTO.getProductIds() == null || orderRequestDTO.getProductIds().isEmpty()) {
+            order = orderService.placeOrder(
+                    emailId, orderRequestDTO.getAddressId(), paymentMethod,
+                    orderRequestDTO.getPgName(), orderRequestDTO.getPgPaymentId(),
+                    orderRequestDTO.getPgStatus(), orderRequestDTO.getPgResponseMessage());
+        } else {
+            order = orderService.placeOrder(
+                    emailId, orderRequestDTO.getAddressId(), paymentMethod,
+                    orderRequestDTO.getPgName(), orderRequestDTO.getPgPaymentId(),
+                    orderRequestDTO.getPgStatus(), orderRequestDTO.getPgResponseMessage(),
+                    orderRequestDTO.getProductIds());
+        }
         return new ResponseEntity<>(order, HttpStatus.CREATED);
     }
 

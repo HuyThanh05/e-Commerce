@@ -13,6 +13,8 @@ import com.ecommerce.sb_ecom.payload.ProductResponse;
 import com.ecommerce.sb_ecom.repositories.CartRepository;
 import com.ecommerce.sb_ecom.repositories.CategoryRepository;
 import com.ecommerce.sb_ecom.repositories.ProductRepository;
+import com.ecommerce.sb_ecom.repositories.OrderItemRepository;
+import com.ecommerce.sb_ecom.repositories.ProductReviewRepository;
 import com.ecommerce.sb_ecom.util.AuthUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+
+    @Autowired
+    private ProductReviewRepository productReviewRepository;
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -202,6 +210,11 @@ public class ProductServiceImpl implements ProductService {
             productDTO.setSellerId(product.getUser().getUserId());
             productDTO.setSellerName(product.getUser().getUserName());
         }
+        Long soldQuantity = orderItemRepository.sumSoldQuantity(product.getProductId());
+        productDTO.setSoldQuantity(soldQuantity == null ? 0 : soldQuantity);
+        productDTO.setReviewCount(productReviewRepository.countByProduct(product));
+        Double average = productReviewRepository.averageRating(product);
+        productDTO.setAverageRating(average == null ? 0 : Math.round(average * 10.0) / 10.0);
         return productDTO;
     }
 

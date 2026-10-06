@@ -344,10 +344,10 @@ export const stripePaymentConfirmation =
       const response = await api.post("/order/users/payments/online", sendData);
       if (response.data) {
         localStorage.removeItem("CHECKOUT_ADDRESS");
-        localStorage.removeItem("cartItems");
+        localStorage.removeItem("selectedCartIds");
         localStorage.removeItem("client-secret");
         dispatch({ type: "REMOVE_CLIENT_SECRET_ADDRESS" });
-        dispatch({ type: "CLEAR_CART" });
+        await dispatch(getUserCart());
         toast.success("Order Accepted");
       } else {
         setErrorMesssage("Payment Failed. Please try again.");

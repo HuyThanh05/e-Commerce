@@ -8,6 +8,8 @@ import com.ecommerce.sb_ecom.payload.ProductDTO;
 import com.ecommerce.sb_ecom.repositories.CartRepository;
 import com.ecommerce.sb_ecom.repositories.CategoryRepository;
 import com.ecommerce.sb_ecom.repositories.ProductRepository;
+import com.ecommerce.sb_ecom.repositories.OrderItemRepository;
+import com.ecommerce.sb_ecom.repositories.ProductReviewRepository;
 import com.ecommerce.sb_ecom.util.AuthUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
     @Mock ProductRepository productRepository;
+    @Mock OrderItemRepository orderItemRepository;
+    @Mock ProductReviewRepository productReviewRepository;
     @Mock CategoryRepository categoryRepository;
     @Mock CartRepository cartRepository;
     @Mock CartService cartService;

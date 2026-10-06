@@ -7,7 +7,7 @@ import { formatPrice } from "../../utils/formatPrice";
 import { getImageUrl } from "../../utils/getImageUrl";
 import SetQuantity from "./SetQuantity";
 
-const ItemContent = ({ productId, productName, image, description, quantity, price, specialPrice }) => {
+const ItemContent = ({ productId, productName, image, description, quantity, price, specialPrice, selected, onToggle }) => {
   const [currentQuantity, setCurrentQuantity] = useState(quantity);
   const dispatch = useDispatch();
   const item = { image, productName, description, specialPrice, price, productId, quantity };
@@ -17,7 +17,7 @@ const ItemContent = ({ productId, productName, image, description, quantity, pri
   const remove = () => dispatch(removeFromCart(item, toast));
 
   return <article className="cart-item">
-    <span className="fake-check"><FiCheck /></span>
+    <button type="button" className={`cart-check ${selected ? "is-selected" : ""}`} onClick={onToggle} aria-label={selected ? `Bỏ chọn ${productName}` : `Chọn ${productName}`}>{selected && <FiCheck />}</button>
     <img className="cart-item__image" src={getImageUrl(image)} alt={productName}/>
     <div className="cart-item__info"><h3>{productName}</h3><span>Phân loại: Tiêu chuẩn</span></div>
     <div className="cart-item__price"><strong>{formatPrice(unitPrice)}</strong>{specialPrice > 0 && <del>{formatPrice(price)}</del>}</div>

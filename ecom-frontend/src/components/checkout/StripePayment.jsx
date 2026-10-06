@@ -11,7 +11,9 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 const StripePayment = () => {
   const dispatch = useDispatch();
   const { clientSecret } = useSelector((state) => state.auth);
-  const { totalPrice } = useSelector((state) => state.carts);
+  const { cart, selectedProductIds = [] } = useSelector((state) => state.carts);
+  const totalPrice = cart.filter((item) => selectedProductIds.includes(item.productId))
+    .reduce((sum, item) => sum + Number(item.specialPrice || item.price) * Number(item.quantity), 0);
   const { isLoading, errorMessage } = useSelector((state) => state.errors);
   const { user, selectedUserCheckoutAddress } = useSelector(
     (state) => state.auth,
@@ -32,7 +34,7 @@ const StripePayment = () => {
       };
       dispatch(createStripePaymentSecret(sendData));
     }
-  }, [clientSecret]);
+  }, [clientSecret, dispatch, selectedUserCheckoutAddress, totalPrice, user]);
 
   if (isLoading) {
     return (
